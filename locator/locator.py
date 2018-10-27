@@ -10,7 +10,8 @@ from h5py import File
 import glob
 import matplotlib.pyplot as plt
 from obspy import UTCDateTime
-from yaml import load, dump
+from yaml import load
+
 
 def load_tt(files, phase_list):
 
@@ -62,6 +63,7 @@ def open_yaml(filename):
 
 
 def serialize_phases(phases):
+    global iref
     phase_list = []
     tt_meas = np.zeros(len(phases))
     sigma = np.zeros_like(tt_meas)
@@ -81,8 +83,6 @@ def serialize_phases(phases):
 
 
 def write_result(file_out, p, dep, dis, tt_P):
-    nmodel, ndepth, ndist = p.shape
-    result = dict()
     p_dist = np.sum(p, axis=(0, 1))
     p_depth = np.sum(p, axis=(0, 2))
 
@@ -112,7 +112,7 @@ def write_result(file_out, p, dep, dis, tt_P):
                    pdf_dist_sum=pdf_dist_sum,
                    pdf_otime_sum=pdf_origin_sum)
         write_single(f, depth_sum=depth_sum, dist_sum=dist_sum,
-                     origin_time_sum=origin_time_sum )
+                     origin_time_sum=origin_time_sum)
         # §f.write('pdf_depth_sum:\n\n')
         # §f.write('  probabilities: ')
         # §print(pdf_depth_sum, file=f)
@@ -125,9 +125,11 @@ def write_prob(f, **kwargs):
         print(value, file=f)
         f.write('\n\n')
 
+
 def write_single(f, **kwargs):
     for key, value in kwargs.items():
         f.write('%s: %f\n\n' % (key, value))
+
 
 if __name__ == '__main__':
     input_file = './data/locator_input.yaml'
@@ -139,8 +141,8 @@ if __name__ == '__main__':
     files.sort()
     tt, dep, dis, tt_P = load_tt(files=files,
                                  phase_list=phase_list)
-    tt[tt==-1] = 1e5
-    tt_P[tt_P==-1] = 1e5
+    tt[tt == -1] = 1e5
+    tt_P[tt_P == -1] = 1e5
 
     modelling_error = 2
     misfit = ((tt - tt_meas) / sigma)**2
@@ -149,7 +151,6 @@ if __name__ == '__main__':
     ndepth = len(dep)
     ndist = len(dis)
     p = 1./np.sqrt((2*np.pi)**nphase*np.prod(sigma)) * np.prod(np.exp(-misfit), axis=3)
-
 
     write_result(file_out=output_file, p=p, dep=dep, dis=dis, tt_P=tt_P)
     plot(p, dep=dep, dis=dis)
