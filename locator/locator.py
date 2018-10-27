@@ -49,9 +49,13 @@ def load_tt(files, phase_list):
                 idx = phase_names.index(phase.encode())
                 tt[ifile, :, :, iphase] = f['/body_waves/times'][:, :, idx]
 
-    idx_P = phase_list.index('P')
+    try:
+        idx_ref = phase_list.index('P')
+    except ValueError:
+        idx_ref = phase_list.index('P1')
+
     tt_P = np.zeros((len(files), ndepth, ndist, 1), dtype='float32')
-    tt_P[:, :, :, 0] = tt[:, :, :, idx_P]
+    tt_P[:, :, :, 0] = tt[:, :, :, idx_ref]
     tt -= tt_P
     return tt, depths, distances, tt_P
 
