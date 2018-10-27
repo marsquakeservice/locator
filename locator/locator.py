@@ -127,17 +127,15 @@ def write_result(file_out, p, dep, dis, tt_P):
     for itime, time in enumerate(time_bin_mid):
         pdf_origin_sum.append([time,
                                origin_pdf[itime]])
-    origin_time_sum = UTCDateTime(tt_ref) + np.sum(origin_pdf * time_bin_mid)
+    origin_time_sum = str(UTCDateTime(tt_ref) + np.sum(origin_pdf * time_bin_mid))
 
     with open(file_out, 'w') as f:
         write_prob(f, pdf_depth_sum=pdf_depth_sum,
                    pdf_dist_sum=pdf_dist_sum,
                    pdf_otime_sum=pdf_origin_sum)
-        write_single(f, depth_sum=depth_sum, dist_sum=dist_sum,
-                     origin_time_sum=origin_time_sum)
-        # §f.write('pdf_depth_sum:\n\n')
-        # §f.write('  probabilities: ')
-        # §print(pdf_depth_sum, file=f)
+        write_single(f, depth_sum=depth_sum, dist_sum=dist_sum)
+        f.write('%s: %s\n \n' % ('origin_time_sum', origin_time_sum))
+
 
 
 def write_prob(f, **kwargs):
