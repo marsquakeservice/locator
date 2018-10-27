@@ -11,6 +11,22 @@ import glob
 import matplotlib.pyplot as plt
 from obspy import UTCDateTime
 from yaml import load
+import argparse
+
+def define_arguments():
+    helptext = 'Locate event based on travel times on single station'
+    parser = argparse.ArgumentParser(description=helptext)
+
+    helptext = "Input YAML file"
+    parser.add_argument('input_file', help=helptext)
+
+    helptext = "Output YAML file"
+    parser.add_argument('output_file', help=helptext)
+
+    helptext = "Path to model files"
+    parser.add_argument('model_path', help=helptext)
+
+    return parser.parse_args()
 
 
 def load_tt(files, phase_list):
@@ -132,11 +148,14 @@ def write_single(f, **kwargs):
 
 
 if __name__ == '__main__':
-    input_file = './data/locator_input.yaml'
-    output_file = './data/locator_output.yaml'
+    args = define_arguments()
+
+    input_file = args.input_file # './data/locator_input.yaml'
+    output_file = args.output_file # './data/locator_output.yaml'
+    model_path = args.model_path # '../tt/mantlecrust_00???.h5'
+
     phase_list, tt_meas, sigma, tt_ref = serialize_phases(open_yaml(input_file))
 
-    model_path = '../tt/mantlecrust_00???.h5'
     files = glob.glob(model_path)
     files.sort()
     tt, dep, dis, tt_P = load_tt(files=files,
