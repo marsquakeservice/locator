@@ -63,15 +63,15 @@ phases:
    uncertainty_upper: 10
    uncertainty_model: uniform
 
-# -
-#   code: G1
-#   datetime: 2019-04-23T15:20:56.886727Z
-#   uncertainty_lower: 25.9584
-#   uncertainty_upper: 32.8808
-#   uncertainty_model: uniform
-#   frequency: 0.04204481943
-#   frequency_uncertainty_lower: 0.003489549426
-#   frequency_uncertainty_upper: 0.003805380574
+ -
+   code: G1
+   datetime: 2019-04-23T15:20:56.886727Z
+   uncertainty_lower: 25.9584
+   uncertainty_upper: 32.8808
+   uncertainty_model: uniform
+   frequency: 0.04204481943
+   frequency_uncertainty_lower: 0.003489549426
+   frequency_uncertainty_upper: 0.003805380574
 #
 # -
 #   code: G1

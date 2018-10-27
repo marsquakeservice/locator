@@ -51,18 +51,18 @@ def plot(p, dis, dep):
     plt.show()
 
 
-def open_yaml(filename):
+def serialize_phases(filename):
     with open(filename, 'r') as f:
         input = load(f)
-    return input['phases']
+    phases = input['phases']
 
+    backazimuth = input['backazimuth']['value']
 
-def serialize_phases(phases):
-    global iref
     phase_list = []
     tt_meas = np.zeros(len(phases))
     sigma = np.zeros_like(tt_meas)
-
+    freqs = np.zeros_like(tt_meas)
+    iref = 0
     for iphase, phase in enumerate(phases):
         phase_list.append(phase['code'])
         if phase['code'] in ['P', 'P1', 'PKP']:
@@ -70,11 +70,15 @@ def serialize_phases(phases):
 
         tt_meas[iphase] = float(UTCDateTime(phase['datetime']))
         sigma[iphase] = phase['uncertainty_upper'] + phase['uncertainty_lower']
+        try:
+            freqs[iphase] = phase['frequency']
+        except:
+            freqs[iphase] = 0
 
     tt_ref = tt_meas[iref]
     tt_meas -= tt_ref
 
-    return phase_list, tt_meas, sigma, tt_ref
+    return phase_list, tt_meas, sigma, freqs, backazimuth, tt_ref
 
 
 if __name__ == '__main__':
@@ -84,12 +88,14 @@ if __name__ == '__main__':
     output_file = args.output_file # './data/locator_output.yaml'
     model_path = args.model_path # '../tt/mantlecrust_00???.h5'
 
-    phase_list, tt_meas, sigma, t_ref = serialize_phases(open_yaml(input_file))
+    phase_list, tt_meas, sigma, freqs, backazimuth, t_ref = serialize_phases(input_file)
 
     files = glob.glob(model_path)
     files.sort()
     tt, dep, dis, tt_P = load_tt(files=files,
-                                 phase_list=phase_list)
+                                 phase_list=phase_list,
+                                 freqs=freqs,
+                                 backazimuth=backazimuth)
     tt[tt == -1] = 1e5
     tt_P[tt_P == -1] = 1e5
 
