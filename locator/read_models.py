@@ -22,7 +22,8 @@ def load_tt(files, phase_list, freqs, backazimuth):
         with File(file) as f:
             _read_body_waves(f, ifile, phase_list, phase_names, tt)
             _read_surface_waves(f, ifile=ifile, phase_list=phase_list,
-                                freqs=freqs, distances=distances, tt=tt)
+                                freqs=freqs, distances=distances, tt=tt,
+                                backazimuth=backazimuth)
     try:
         idx_ref = phase_list.index('P')
     except ValueError:
@@ -42,8 +43,7 @@ def _read_body_waves(f, ifile, phase_list, phase_names, tt):
             tt[ifile, :, :, iphase] = f['/body_waves/times'][:, :, idx]
 
 
-def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt):
-    baz = 180
+def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt, backazimuth):
     periods = f['/surface_waves/periods'].value
     dist_model = f['/surface_waves/distances']
     dist_pad = np.zeros(len(dist_model) + 1)
@@ -59,6 +59,6 @@ def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt):
             tt_pad[1:, :] = f['/surface_waves/period_%02d/tt_%s' %
                               (idx_freq, _type[phase])]
             ipl = interp2d(x=baz_model, y=dist_pad, z=tt_pad, kind='cubic')
-            tt[ifile, :, :, iphase] = ipl(baz,
+            tt[ifile, :, :, iphase] = ipl(backazimuth,
                                           distances).T
 

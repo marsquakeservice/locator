@@ -3,7 +3,7 @@
 """
 
 """
-
+from locator.graphics import plot,plot_phases
 from locator.output import write_result
 from locator.read_models import load_tt
 
@@ -12,7 +12,6 @@ __license__ = "none"
 
 import numpy as np
 import glob
-import matplotlib.pyplot as plt
 from obspy import UTCDateTime
 from yaml import load
 import argparse
@@ -31,24 +30,6 @@ def define_arguments():
     parser.add_argument('model_path', help=helptext)
 
     return parser.parse_args()
-
-
-def plot(p, dis, dep):
-    nmodel, ndepth, ndist = p.shape
-    depthdist = np.sum(p, axis=(0)) / nmodel
-    plt.contourf(dis, dep, depthdist)
-    plt.colorbar()
-    plt.xlabel('distance')
-    plt.ylabel('depth')
-    plt.tight_layout()
-    plt.savefig('depth_distance.png')
-    plt.show()
-    plt.plot(np.sum(p, axis=(1, 2)) / ndepth / ndist, '.')
-    plt.xlabel('Model index')
-    plt.ylabel('likelihood')
-    plt.tight_layout()
-    plt.savefig('model_likelihood.png')
-    plt.show()
 
 
 def serialize_phases(filename):
@@ -105,9 +86,12 @@ if __name__ == '__main__':
     nmodel = tt.shape[0]
     ndepth = len(dep)
     ndist = len(dis)
-    p = 1./np.sqrt((2*np.pi)**nphase*np.prod(sigma)) * np.prod(np.exp(-misfit), axis=3)
+    p = 1. / np.sqrt((2*np.pi)**nphase * np.prod(sigma)) \
+        * np.exp(-0.5 * np.sum(misfit, axis=3))
 
     write_result(file_out=output_file,
                  p=p, dep=dep, dis=dis,
                  tt_P=tt_P, t_ref=t_ref)
     plot(p, dep=dep, dis=dis)
+
+    plot_phases(tt, p, phase_list, tt_meas, sigma)
