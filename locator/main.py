@@ -3,9 +3,9 @@
 """
 
 """
-from locator.graphics import plot,plot_phases
-from locator.output import write_result
-from locator.read_models import load_tt
+from graphics import plot,plot_phases
+from output import write_result
+from read_models import load_tt
 
 __author__ = "Simon Stähler"
 __license__ = "none"
@@ -37,7 +37,7 @@ def serialize_phases(filename):
         input = load(f)
     phases = input['phases']
 
-    backazimuth = input['backazimuth']['value']
+    backazimuth = 180 # input['backazimuth']['value']
 
     phase_list = []
     tt_meas = np.zeros(len(phases))
