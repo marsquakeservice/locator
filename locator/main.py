@@ -14,11 +14,11 @@ import numpy as np
 import glob
 from obspy import UTCDateTime
 from yaml import load
-import argparse
+from argparse import ArgumentParser
 
 def define_arguments():
     helptext = 'Locate event based on travel times on single station'
-    parser = argparse.ArgumentParser(description=helptext)
+    parser = ArgumentParser(description=helptext)
 
     helptext = "Input YAML file"
     parser.add_argument('input_file', help=helptext)
@@ -28,6 +28,9 @@ def define_arguments():
 
     helptext = "Path to model files"
     parser.add_argument('model_path', help=helptext)
+
+    helptext = "Create plots"
+    parser.add_argument('--plot', help=helptext, type=bool)
 
     return parser.parse_args()
 
@@ -50,7 +53,7 @@ def serialize_phases(filename):
             iref = iphase
 
         tt_meas[iphase] = float(UTCDateTime(phase['datetime']))
-        sigma[iphase] = phase['uncertainty_upper'] + phase['uncertainty_lower']
+        sigma[iphase] = (phase['uncertainty_upper'] + phase['uncertainty_lower']) * 0.5
         try:
             freqs[iphase] = phase['frequency']
         except:
@@ -65,9 +68,9 @@ def serialize_phases(filename):
 if __name__ == '__main__':
     args = define_arguments()
 
-    input_file = args.input_file # './data/locator_input.yaml'
-    output_file = args.output_file # './data/locator_output.yaml'
-    model_path = args.model_path # '../tt/mantlecrust_00???.h5'
+    input_file = args.input_file
+    output_file = args.output_file
+    model_path = args.model_path
 
     phase_list, tt_meas, sigma, freqs, backazimuth, t_ref = serialize_phases(input_file)
 
@@ -92,6 +95,7 @@ if __name__ == '__main__':
     write_result(file_out=output_file,
                  p=p, dep=dep, dis=dis,
                  tt_P=tt_P, t_ref=t_ref)
-    plot(p, dep=dep, dis=dis)
 
-    plot_phases(tt, p, phase_list, tt_meas, sigma)
+    if args.plot:
+        plot(p, dep=dep, dis=dis)
+        plot_phases(tt, p, phase_list, tt_meas, sigma)
