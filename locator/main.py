@@ -41,7 +41,10 @@ def serialize_phases(filename):
         input = load(f)
     phases = input['phases']
 
-    backazimuth = 180 # input['backazimuth']['value']
+    try:
+        backazimuth = input['backazimuth']['value']
+    except KeyError:
+        backazimuth = 0.0
 
     phase_list = []
     tt_meas = np.zeros(len(phases))
@@ -104,11 +107,11 @@ if __name__ == '__main__':
 
     p *= deldis
     #p *= deldep
+    if args.plot:
+        plot(p, dep=dep, dis=dis)
+        plot_phases(tt, p, phase_list, tt_meas, sigma)
 
     write_result(file_out=output_file,
                  p=p, dep=dep, dis=dis,
                  tt_P=tt_P, t_ref=t_ref)
 
-    if args.plot:
-        plot(p, dep=dep, dis=dis)
-        plot_phases(tt, p, phase_list, tt_meas, sigma)

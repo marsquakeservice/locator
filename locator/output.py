@@ -18,7 +18,7 @@ def write_result(file_out, p, dep, dis, tt_P, t_ref):
 
     origin_pdf, origin_times = np.histogram(a=-tt_P.flatten(),
                                             weights=p.flatten(),
-                                            bins=np.linspace(-600, 0, 100),
+                                            bins=np.linspace(-1200, 0, 120),
                                             density=True)
     pdf_origin_sum = []
     time_bin_mid = (origin_times[0:-1] + origin_times[1:]) / 2.
