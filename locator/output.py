@@ -23,14 +23,14 @@ def write_result(file_out, p, dep, dis, tt_P, t_ref):
     pdf_origin_sum = []
     time_bin_mid = (origin_times[0:-1] + origin_times[1:]) / 2.
     for itime, time in enumerate(time_bin_mid):
-        pdf_origin_sum.append([time,
+        pdf_origin_sum.append([t_ref + time,
                                origin_pdf[itime]])
-    origin_time_sum = UTCDateTime(t_ref) + np.sum(origin_pdf * time_bin_mid)
+    origin_time_sum = UTCDateTime(np.sum(origin_pdf * (time_bin_mid))  / np.sum(origin_pdf) + t_ref)
 
     with open(file_out, 'w') as f:
         _write_prob(f, pdf_depth_sum=pdf_depth_sum,
-                   pdf_dist_sum=pdf_dist_sum,
-                   pdf_otime_sum=pdf_origin_sum)
+                   pdf_dist_sum=pdf_dist_sum)
+        _write_prob_time(f, pdf_otime_sum=pdf_origin_sum)
         _write_single(f, depth_sum=depth_sum, dist_sum=dist_sum)
         f.write('%s: %s\n \n' % ('origin_time_sum', origin_time_sum))
 
@@ -40,6 +40,14 @@ def write_result(file_out, p, dep, dis, tt_P, t_ref):
 def _write_prob(f, **kwargs):
     for key, value in kwargs.items():
         f.write('%s: \n' % key)
+        f.write('  probabilities: ')
+        print(value, file=f)
+        f.write('\n\n')
+
+
+def _write_prob_time(f, **kwargs):
+    for key, value in kwargs.items():
+        f.write('%s: \n' % str(key))
         f.write('  probabilities: ')
         print(value, file=f)
         f.write('\n\n')
