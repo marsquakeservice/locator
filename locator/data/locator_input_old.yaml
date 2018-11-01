@@ -1,0 +1,115 @@
+velocity_model: simon.2018-09-17
+velocity_model_uncertainty: 1.5
+
+backazimuth:
+   value: 178.0
+   uncertainty_lower: 10.0
+   uncertainty_upper: 10.0
+
+phases:
+# -
+#   code: PP
+#   datetime: 2019-04-23T15:10:38.288776Z
+#   uncertainty_lower: 1
+#   uncertainty_upper: 1
+#   uncertainty_model: uniform
+
+ -
+   code: S
+   datetime: 2019-04-23T15:15:43.06226Z
+   uncertainty_lower: 2.7082
+   uncertainty_upper: 1.4451
+   uncertainty_model: uniform
+
+ -
+   code: P
+   datetime: 2019-04-23T15:10:22.772923Z
+   uncertainty_lower: 0.6761
+   uncertainty_upper: 0.200000003
+   uncertainty_model: uniform
+
+ -
+   code: pP
+   datetime: 2019-04-23T15:10:37.650456Z
+   uncertainty_lower: 1
+   uncertainty_upper: 1
+   uncertainty_model: uniform
+
+# -
+#   code: R1
+#   datetime: 2019-04-23T15:22:14.013157Z
+#   uncertainty_lower: 42.8403
+#   uncertainty_upper: 74.2565
+#   uncertainty_model: uniform
+#
+# -
+#   code: R1
+#   datetime: 2019-04-23T15:22:24.009129Z
+#   uncertainty_lower: 42.8402
+#   uncertainty_upper: 119.9529
+#   uncertainty_model: uniform
+#
+# -
+#   code: R1
+#   datetime: 2019-04-23T15:22:28.293187Z
+#   uncertainty_lower: 47.1242
+#   uncertainty_upper: 95.6767
+#   uncertainty_model: uniform
+
+ -
+   code: SS
+   datetime: 2019-04-23T15:16:52.988133Z
+   uncertainty_lower: 9.7097
+   uncertainty_upper: 10
+   uncertainty_model: uniform
+
+# -
+#   code: G1
+#   datetime: 2019-04-23T15:20:56.886727Z
+#   uncertainty_lower: 25.9584
+#   uncertainty_upper: 32.8808
+#   uncertainty_model: uniform
+#   frequency: 0.04204481943
+#   frequency_uncertainty_lower: 0.003489549426
+#   frequency_uncertainty_upper: 0.003805380574
+#
+# -
+#   code: G1
+#   datetime: 2019-04-23T15:20:51.695077Z
+#   uncertainty_lower: 36.3418
+#   uncertainty_upper: 25.9585
+#   uncertainty_model: uniform
+#   frequency: 0.03535533939
+#   frequency_uncertainty_lower: 0.002934349386
+#   frequency_uncertainty_upper: 0.003199930614
+#
+# -
+#   code: G1
+#   datetime: 2019-04-23T15:20:49.964486Z
+#   uncertainty_lower: 39.8029
+#   uncertainty_upper: 30.5733
+#   uncertainty_model: uniform
+#   frequency: 0.02973017659
+#   frequency_uncertainty_lower: 0.002467486586
+#   frequency_uncertainty_upper: 0.002690813414
+#
+# -
+#   code: G1
+#   datetime: 2019-04-23T15:20:48.810799Z
+#   uncertainty_lower: 47.302
+#   uncertainty_upper: 36.9187
+#   uncertainty_model: uniform
+#   frequency: 0.02499999789
+#   frequency_uncertainty_lower: 0.00207489789
+#   frequency_uncertainty_upper: 0.00226269211
+#
+# -
+#   code: G1
+#   datetime: 2019-04-23T15:20:43.619088Z
+#   uncertainty_lower: 60.5697
+#   uncertainty_upper: 50.1864
+#   uncertainty_model: uniform
+#   frequency: 0.02102241244
+#   frequency_uncertainty_lower: 0.001744772439
+#   frequency_uncertainty_upper: 0.001902687561
+
