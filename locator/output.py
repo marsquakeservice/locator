@@ -1,8 +1,9 @@
 from __future__ import print_function
 import numpy as np
 from obspy import UTCDateTime
+from h5py import File
 
-def write_result(file_out, p, dep, dis, tt_P, t_ref):
+def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref):
     p_dist = np.sum(p, axis=(0, 1))
     p_depth = np.sum(p, axis=(0, 2))
 
@@ -16,6 +17,8 @@ def write_result(file_out, p, dep, dis, tt_P, t_ref):
         pdf_dist_sum.append([d, p_dist[idist]])
     dist_sum = np.sum(dis * p_dist) / np.sum(p_dist)
 
+    # Calculate origin time PDF using weighted histogram over P travel
+    # times. This works because code uses P-arrival as time 0 elsewhere
     origin_pdf, origin_times = np.histogram(a=-tt_P.flatten(),
                                             weights=p.flatten(),
                                             bins=np.linspace(-1200, 0, 120),
@@ -27,6 +30,8 @@ def write_result(file_out, p, dep, dis, tt_P, t_ref):
                                origin_pdf[itime]])
     origin_time_sum = UTCDateTime(np.sum(origin_pdf * (time_bin_mid))  / np.sum(origin_pdf) + t_ref)
 
+    # Write serialized YAML output for the GUI.
+    # TODO: Might be something wrong with the origin times
     with open(file_out, 'w') as f:
         _write_prob(f, pdf_depth_sum=pdf_depth_sum,
                    pdf_dist_sum=pdf_dist_sum)
@@ -34,7 +39,13 @@ def write_result(file_out, p, dep, dis, tt_P, t_ref):
         _write_single(f, depth_sum=depth_sum, dist_sum=dist_sum)
         f.write('%s: %s\n \n' % ('origin_time_sum', origin_time_sum))
 
-    _write_model(p, origin_time_sum)
+    _write_model_misfits(p, origin_time_sum)
+
+    _write_h5_output(p, depths=dep, distances=dis,
+                     phase_list=phase_list,
+                     tt_meas=tt_meas,
+                     t_ref=t_ref,
+                     origin_time=origin_time_sum)
 
 
 def _write_prob(f, **kwargs):
@@ -58,9 +69,9 @@ def _write_single(f, **kwargs):
         f.write('%s: %f\n\n' % (key, value))
 
 
-def _write_model(p, origin_time_sum):
+def _write_model_misfits(p, origin_time_sum):
     """
-
+    Write probability for each model
     :type origin_time_sum: obspy.UTCDateTime
     """
     fnam = 'model_misfits_%s.txt' % \
@@ -69,3 +80,15 @@ def _write_model(p, origin_time_sum):
     with open(fnam, 'w') as f:
         for imodel, model in enumerate(p_model):
             f.write('%5d, %8.3e\n' % (imodel, model))
+
+def _write_h5_output(p, depths, distances, phase_list, tt_meas, t_ref, origin_time):
+    fnam = 'locator_output_%s.h5' % \
+           (origin_time.strftime(format='%y-%m-%dT%H%M'))
+
+    with File(fnam, 'w') as f:
+        f.create_dataset('p', data=p)
+        f.create_dataset('depths', data=depths)
+        f.create_dataset('distances', data=distances)
+        f.create_dataset('tt_meas', data=tt_meas)
+        f.create_dataset('t_ref', data=t_ref)
+        f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore") for n in phase_list])

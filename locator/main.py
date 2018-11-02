@@ -113,5 +113,9 @@ if __name__ == '__main__':
 
     write_result(file_out=output_file,
                  p=p, dep=dep, dis=dis,
+                 phase_list=phase_list,
+                 tt_meas=tt_meas,
                  tt_P=tt_P, t_ref=t_ref)
+
+
 
