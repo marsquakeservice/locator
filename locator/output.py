@@ -17,18 +17,11 @@ def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref):
         pdf_dist_sum.append([d, p_dist[idist]])
     dist_sum = np.sum(dis * p_dist) / np.sum(p_dist)
 
-    # Calculate origin time PDF using weighted histogram over P travel
-    # times. This works because code uses P-arrival as time 0 elsewhere
-    origin_pdf, origin_times = np.histogram(a=-tt_P.flatten(),
-                                            weights=p.flatten(),
-                                            bins=np.linspace(-1200, 0, 120),
-                                            density=True)
+    origin_pdf, origin_time_sum, time_bin_mid = calc_origin_time(p, t_ref, tt_P)
     pdf_origin_sum = []
-    time_bin_mid = (origin_times[0:-1] + origin_times[1:]) / 2.
     for itime, time in enumerate(time_bin_mid):
         pdf_origin_sum.append([t_ref + time,
                                origin_pdf[itime]])
-    origin_time_sum = UTCDateTime(np.sum(origin_pdf * (time_bin_mid))  / np.sum(origin_pdf) + t_ref)
 
     # Write serialized YAML output for the GUI.
     # TODO: Might be something wrong with the origin times
@@ -46,6 +39,19 @@ def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref):
                      tt_meas=tt_meas,
                      t_ref=t_ref,
                      origin_time=origin_time_sum)
+
+
+def calc_origin_time(p, t_ref, tt_P):
+    # Calculate origin time PDF using weighted histogram over P travel
+    # times. This works because code uses P-arrival as time 0 elsewhere
+    origin_pdf, origin_times = np.histogram(a=-tt_P.flatten(),
+                                            weights=p.flatten(),
+                                            bins=np.linspace(-1200, 0, 120),
+                                            density=True)
+    time_bin_mid = (origin_times[0:-1] + origin_times[1:]) / 2.
+    origin_time_sum = UTCDateTime(np.sum(origin_pdf * (time_bin_mid))
+                                  / np.sum(origin_pdf) + t_ref)
+    return origin_pdf, origin_time_sum, time_bin_mid
 
 
 def _write_prob(f, **kwargs):
