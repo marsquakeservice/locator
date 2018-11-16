@@ -86,10 +86,11 @@ def read_input(filename):
         except KeyError:
             backazimuth = 0.0
 
+        model_name = input_yml['velocity_model']
         sigma_model = input_yml['velocity_model_uncertainty']
 
 
-    return phase_list, tt_meas, sigma, freqs, backazimuth, tt_ref, sigma_model
+    return model_name, phase_list, tt_meas, sigma, freqs, backazimuth, tt_ref, sigma_model
 
 
 def serialize_phases(phases):

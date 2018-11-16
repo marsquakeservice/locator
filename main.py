@@ -12,6 +12,8 @@ __author__ = "Simon Stähler"
 __license__ = "none"
 
 from argparse import ArgumentParser
+import os
+
 
 def define_arguments():
     helptext = 'Locate event based on travel times on single station'
@@ -23,11 +25,11 @@ def define_arguments():
     helptext = "Output YAML file"
     parser.add_argument('output_file', help=helptext)
 
-    helptext = "Path to model list file"
-    parser.add_argument('model_path', help=helptext)
+    # helptext = "Path to model list file"
+    # parser.add_argument('model_path', help=helptext)
 
-    helptext = "Path to model weight file"
-    parser.add_argument('weight_path', help=helptext)
+    # helptext = "Path to model weight file"
+    # parser.add_argument('weight_path', help=helptext)
 
     helptext = "Create plots"
     parser.add_argument('--plot', help=helptext,
@@ -36,9 +38,14 @@ def define_arguments():
     return parser.parse_args()
 
 
-def main(input_file, output_file, model_path, weight_path, plot_output=False):
+def main(input_file, output_file, plot_output=False):
+    model_name, phase_list, tt_meas, sigma_pick, freqs, backazimuth, t_ref, sigma_model = read_input(input_file)
+
+    ssl_path = os.environ['SINGLESTATION']
+    model_path=os.path.join(ssl_path, model_name, '%s.models' % model_name)
+    weight_path=os.path.join(ssl_path, model_name, '%s.weights' % model_name)
     files, weights = read_model_list(model_path, weight_path)
-    phase_list, tt_meas, sigma_pick, freqs, backazimuth, t_ref, sigma_model = read_input(input_file)
+
     tt, dep, dis, tt_P = load_tt(files=files,
                                  phase_list=phase_list,
                                  freqs=freqs,
@@ -61,8 +68,6 @@ if __name__ == '__main__':
     args = define_arguments()
     main(input_file=args.input_file,
          output_file=args.output_file,
-         model_path=args.model_path,
-         weight_path=args.weight_path,
          plot_output=args.plot)
 
 
