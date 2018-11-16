@@ -3,6 +3,7 @@ from h5py import File
 from obspy import UTCDateTime
 from scipy.interpolate import interp2d
 from yaml import load
+from os.path import join as pjoin
 
 _type = dict(R1 = 'rayleigh',
              G1 = 'love')
@@ -14,15 +15,15 @@ def read_model_list(fnam_models, fnam_weights):
     :param fnam_weights: Path to weight file, format: lines of "model name, weight"
     :return: Numpy arrays of file names and weights
     """
-    fnams = np.loadtxt(fnam_models, dtype=str, usecols=(1))
-    weights = np.loadtxt(fnam_weights, dtype=float, usecols=(1))
+    fnams = np.loadtxt(fnam_models, dtype=str, usecols=[1])
+    weights = np.loadtxt(fnam_weights, dtype=float, usecols=[1])
     return fnams, weights
 
 
-def load_tt(files, phase_list, freqs, backazimuth):
+def load_tt(files, tt_path, phase_list, freqs, backazimuth):
 
     # Get dimension of TT variable (i.e. number of depths and distances)
-    with File(files[0]) as f:
+    with File(pjoin(tt_path, 'tt', files[0])) as f:
         tts = f['/body_waves/times']
         ndepth, ndist, nphase = tts.shape
         phase_names = f['/body_waves/phase_names'].value.tolist()
@@ -32,7 +33,7 @@ def load_tt(files, phase_list, freqs, backazimuth):
     tt = np.zeros((len(files), ndepth, ndist, len(phase_list)), dtype='float32')
 
     for ifile, file in enumerate(files):
-        with File(file) as f:
+        with File(pjoin(tt_path, 'tt', file)) as f:
             _read_body_waves(f, ifile, phase_list, phase_names, tt)
             _read_surface_waves(f, ifile=ifile, phase_list=phase_list,
                                 freqs=freqs, distances=distances, tt=tt,
