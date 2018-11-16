@@ -38,7 +38,7 @@ def define_arguments():
 
 def main(input_file, output_file, model_path, weight_path, plot_output=False):
     files, weights = read_model_list(model_path, weight_path)
-    phase_list, tt_meas, sigma_pick, freqs, backazimuth, sigma_model, t_ref = read_input(input_file)
+    phase_list, tt_meas, sigma_pick, freqs, backazimuth, t_ref, sigma_model = read_input(input_file)
     tt, dep, dis, tt_P = load_tt(files=files,
                                  phase_list=phase_list,
                                  freqs=freqs,

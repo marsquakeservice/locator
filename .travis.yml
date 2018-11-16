@@ -10,4 +10,4 @@ install:
 script:
   - python main.py locator/data/locator_input.yaml locator/data/locator_output.yaml locator/data/models.txt locator/data/weights.txt --plot
   - ls
-  - h5diff locator_output_19-01-03T1500.h5 locator/data/tests/locator_output.h5
+  - h5diff locator_output_19-01-03T1500.h5 locator/data/tests/locator_output_ref.h5
