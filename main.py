@@ -3,9 +3,9 @@
 """
 
 """
-from graphics import plot,plot_phases
-from output import write_result
-from read_models import load_tt, read_model_list
+from locator.graphics import plot,plot_phases
+from locator.output import write_result
+from locator.read_models import load_tt, read_model_list
 
 __author__ = "Simon Stähler"
 __license__ = "none"
