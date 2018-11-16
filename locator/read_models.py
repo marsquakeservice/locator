@@ -5,6 +5,17 @@ from scipy.interpolate import interp2d
 _type = dict(R1 = 'rayleigh',
              G1 = 'love')
 
+def read_model_list(fnam_models, fnam_weights):
+    """
+    Read model list and weights from files
+    :param fnam_models: Path to model file, format: lines of "model name, path"
+    :param fnam_weights: Path to weight file, format: lines of "model name, weight"
+    :return: Numpy arrays of file names and weights
+    """
+    fnams = np.loadtxt(fnam_models, dtype=str, usecols=(1))
+    weights = np.loadtxt(fnam_weights, dtype=float, usecols=(1))
+    return fnams, weights
+
 
 def load_tt(files, phase_list, freqs, backazimuth):
 

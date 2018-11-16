@@ -5,7 +5,7 @@
 """
 from graphics import plot,plot_phases
 from output import write_result
-from read_models import load_tt
+from read_models import load_tt, read_model_list
 
 __author__ = "Simon Stähler"
 __license__ = "none"
@@ -26,8 +26,11 @@ def define_arguments():
     helptext = "Output YAML file"
     parser.add_argument('output_file', help=helptext)
 
-    helptext = "Path to model files"
+    helptext = "Path to model list file"
     parser.add_argument('model_path', help=helptext)
+
+    helptext = "Path to model weight file"
+    parser.add_argument('weight_path', help=helptext)
 
     helptext = "Create plots"
     parser.add_argument('--plot', help=helptext,
@@ -74,12 +77,13 @@ if __name__ == '__main__':
 
     input_file = args.input_file
     output_file = args.output_file
-    model_path = args.model_path
+    # model_path = args.model_path
+    # files = glob.glob(model_path)
+    # files.sort()
+    files, weights = read_model_list(args.model_path, args.weight_path)
 
     phase_list, tt_meas, sigma, freqs, backazimuth, t_ref = serialize_phases(input_file)
 
-    files = glob.glob(model_path)
-    files.sort()
     tt, dep, dis, tt_P = load_tt(files=files,
                                  phase_list=phase_list,
                                  freqs=freqs,
