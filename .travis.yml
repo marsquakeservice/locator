@@ -9,7 +9,11 @@ python:
 install:
   - sudo apt-get -qqy install hdf5-tools
   - pip install -qq -r requirements.txt
+  - pip install coveralls
 # command to run tests
 script:
   - python main.py locator/data/locator_input.yaml locator/data/locator_output.yaml --plot
   - python locator/test_h5_output.py locator_output_19-01-03T1500.h5 locator/data/tests/locator_output_ref.h5 -p 1e-5
+
+after_success:
+  - cd $TRAVIS_BUILD_DIR; coveralls
