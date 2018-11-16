@@ -33,12 +33,12 @@ CLASSIFIERS = ["Development Status :: 4 - Beta",
 
 description = "locator : Find earthquake locations"
 long_description = """
-Seismogram noise
-========
+LOCATOR
+=======
 
 License
 =======
-``SEISMOGRAM_NOISE`` is licensed under the terms of the MIT license. See the file
+``LOCATOR`` is licensed under the terms of the MIT license. See the file
 "LICENSE" for information on the history of this software, terms & conditions
 for usage, and a DISCLAIMER OF ALL WARRANTIES.
 All trademarks referenced herein are property of their respective holders.
@@ -61,7 +61,7 @@ opts = dict(name='locator',
             package_data={'locator': [pjoin('data', '*')]},
             install_requires=['numpy', 'scipy', 'h5py', 'pyyaml', 'obspy'],
             entry_points={'console_scripts':
-                          ['seismogram_noise = seismogram_noise.seismogram_noise:main', ], })
+                          ['locator = locator.main:main', ], })
 
 
 if __name__ == '__main__':

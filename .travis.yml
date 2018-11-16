@@ -1,0 +1,10 @@
+language: python
+python:
+  - "2.7"
+  - "3.6"
+# command to install dependencies
+install:
+  - pip install -r requirements.txt
+# command to run tests
+script:
+  - python locator/main.py locator/data/locator_input.yaml locator/data/locator_output.yaml locator/data/*.h5 --plot
