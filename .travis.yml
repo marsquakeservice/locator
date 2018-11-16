@@ -4,7 +4,10 @@ python:
   - "3.6"
 # command to install dependencies
 install:
-  - pip install -r requirements.txt
+  - sudo apt-get -qqy install hdf5-tools
+  - pip install -qq -r requirements.txt
 # command to run tests
 script:
   - python main.py locator/data/locator_input.yaml locator/data/locator_output.yaml locator/data/models.txt locator/data/weights.txt --plot
+  - ls
+  - h5diff locator_output_19-01-03T1500.h5 locator/data/tests/locator_output.h5
