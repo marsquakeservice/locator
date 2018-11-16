@@ -7,7 +7,7 @@ from yaml import load
 _type = dict(R1 = 'rayleigh',
              G1 = 'love')
 
-def read_model_list(fnam_models, fnam_weights):
+def read_model_list(fnam_models, fnam_weights, weight_lim=1e-5):
     """
     Read model list and weights from files
     :param fnam_models: Path to model file, format: lines of "model name, path"
@@ -16,7 +16,7 @@ def read_model_list(fnam_models, fnam_weights):
     """
     fnams = np.loadtxt(fnam_models, dtype=str, usecols=(1))
     weights = np.loadtxt(fnam_weights, dtype=float, usecols=(1))
-    return fnams, weights
+    return fnams[weights>weight_lim], weights[weights>weight_lim]
 
 
 def load_tt(files, phase_list, freqs, backazimuth):
@@ -44,6 +44,11 @@ def load_tt(files, phase_list, freqs, backazimuth):
 
     tt_P = np.zeros((len(files), ndepth, ndist, 1), dtype='float32')
     tt_P[:, :, :, 0] = tt[:, :, :, idx_ref]
+
+    # -1 is the value for no arrival at this distance/model/depth combo
+    tt[tt == -1] = 1e5
+    tt_P[tt_P == -1] = 1e5
+
     tt -= tt_P
     return tt, depths, distances, tt_P
 

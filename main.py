@@ -50,10 +50,13 @@ def main(input_file, output_file, plot_output=False):
                                  phase_list=phase_list,
                                  freqs=freqs,
                                  backazimuth=backazimuth)
-    tt[tt == -1] = 1e5
-    tt_P[tt_P == -1] = 1e5
+
+    # Total sigma is sigma of modelled travel time plus picking uncertainty
     sigma = sigma_model + sigma_pick
-    p = calc_p(dep, dis, sigma, tt, tt_meas)
+
+    # Calculate probability
+    p = calc_p(dep, dis, sigma, tt, tt_meas, weights)
+
     if plot_output:
         plot(p, dep=dep, dis=dis)
         plot_phases(tt, p, phase_list, tt_meas, sigma)
