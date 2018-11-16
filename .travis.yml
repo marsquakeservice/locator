@@ -8,4 +8,3 @@ install:
 # command to run tests
 script:
   - python main.py locator/data/locator_input.yaml locator/data/locator_output.yaml locator/data/models.txt locator/data/weights.txt --plot
-  - diff  locator/data/locator_output.yaml locator/data/locator_output_ref.yaml
