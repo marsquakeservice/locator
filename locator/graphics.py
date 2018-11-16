@@ -1,4 +1,5 @@
 import numpy as np
+from os.path import join as pjoin
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import pyplot as plt
@@ -56,13 +57,36 @@ def plot(p, dis, dep):
     #plt.savefig('depth_distance.png')
     plt.close('all')
 
+
+def plot_models(p, files, tt_path):
+    from h5py import File
     # Model likelihood plot
-    plt.plot(np.sum(p, axis=(1, 2)), '.')
+    models_p = np.sum(p, axis=(1, 2))
+    plt.plot(models_p, '.')
     plt.xlabel('Model index')
     plt.ylabel('likelihood')
     plt.tight_layout()
     plt.savefig('model_likelihood.png')
     plt.close('all')
+    models_p /= max(models_p)
+    fig, ax = plt.subplots(1, 2, figsize=(10,7))
+    for fnam, model_p in zip(files, models_p):
+        with File(pjoin(tt_path, 'tt', fnam)) as f:
+            radius = np.asarray(f['mantle/radius'])
+            radius = (max(radius) - radius) * 1e-3
+            for a in ax:
+                lp,  = a.plot(f['mantle/vp'], radius, c='darkblue', alpha=model_p)
+                ls,  = a.plot(f['mantle/vs'], radius,c='darkred', alpha=model_p)
+    ax[0].set_ylim(3590, 0)
+    ax[1].set_ylim(120, 0)
+    ax[1].legend((lp, ls), ('vp', 'vs'))
+    for a in ax:
+        a.set_xlabel('velocity / m/s')
+        a.set_ylabel('depth / km')
+
+    plt.savefig('velocity_models.png')
+
+
 
 
 def plot_phases(tt, p, phase_list, tt_meas, sigma):

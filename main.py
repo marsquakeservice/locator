@@ -3,7 +3,7 @@
 """
 
 """
-from locator.graphics import plot_phases, plot
+from locator.graphics import plot_phases, plot, plot_models
 from locator.misfits import calc_p
 from locator.output import write_result
 from locator.input import load_tt, read_model_list, read_input
@@ -41,12 +41,17 @@ def define_arguments():
 def main(input_file, output_file, plot_output=False):
     model_name, phase_list, tt_meas, sigma_pick, freqs, backazimuth, t_ref, sigma_model = read_input(input_file)
 
-    ssl_path = os.environ['SINGLESTATION']
-    model_path=os.path.join(ssl_path, model_name, '%s.models' % model_name)
-    weight_path=os.path.join(ssl_path, model_name, '%s.weights' % model_name)
+    tt_path = os.path.join(os.environ['SINGLESTATION'], 
+                           'data', 'bodywave',
+                           model_name)
+    model_path=os.path.join(tt_path, 
+                            '%s.models' % model_name)
+    weight_path=os.path.join(tt_path,
+                             '%s.weights' % model_name)
     files, weights = read_model_list(model_path, weight_path)
 
     tt, dep, dis, tt_P = load_tt(files=files,
+                                 tt_path=tt_path,
                                  phase_list=phase_list,
                                  freqs=freqs,
                                  backazimuth=backazimuth)
@@ -60,6 +65,7 @@ def main(input_file, output_file, plot_output=False):
     if plot_output:
         plot(p, dep=dep, dis=dis)
         plot_phases(tt, p, phase_list, tt_meas, sigma)
+        plot_models(p, files, tt_path)
     write_result(file_out=output_file,
                  p=p, dep=dep, dis=dis,
                  phase_list=phase_list,
