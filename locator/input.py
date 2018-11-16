@@ -1,6 +1,8 @@
 import numpy as np
 from h5py import File
+from obspy import UTCDateTime
 from scipy.interpolate import interp2d
+from yaml import load
 
 _type = dict(R1 = 'rayleigh',
              G1 = 'love')
@@ -73,3 +75,43 @@ def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt, backazimuth)
             tt[ifile, :, :, iphase] = ipl(backazimuth,
                                           distances).T
 
+
+def read_input(filename):
+    with open(filename, 'r') as f:
+        input_yml = load(f)
+        phase_list, tt_meas, sigma, freqs, tt_ref = \
+            serialize_phases(input_yml['phases'])
+        try:
+            backazimuth = input_yml['backazimuth']['value']
+        except KeyError:
+            backazimuth = 0.0
+
+        sigma_model = input_yml['velocity_model_uncertainty']
+
+
+    return phase_list, tt_meas, sigma, freqs, backazimuth, tt_ref, sigma_model
+
+
+def serialize_phases(phases):
+
+    phase_list = []
+    tt_meas = np.zeros(len(phases))
+    sigma = np.zeros_like(tt_meas)
+    freqs = np.zeros_like(tt_meas)
+    iref = 0
+    for iphase, phase in enumerate(phases):
+        phase_list.append(phase['code'])
+        if phase['code'] in ['P', 'P1', 'PKP']:
+            iref = iphase
+
+        tt_meas[iphase] = float(UTCDateTime(phase['datetime']))
+        sigma[iphase] = (phase['uncertainty_upper'] + phase['uncertainty_lower']) * 0.5
+        try:
+            freqs[iphase] = phase['frequency']
+        except:
+            freqs[iphase] = 0
+
+    tt_ref = tt_meas[iref]
+    tt_meas -= tt_ref
+
+    return phase_list, tt_meas, sigma, freqs, tt_ref
