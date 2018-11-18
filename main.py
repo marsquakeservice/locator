@@ -3,7 +3,7 @@
 """
 
 """
-from locator.graphics import plot_phases, plot
+from locator.graphics import plot_phases, plot, plot_models
 from locator.misfits import calc_p
 from locator.output import write_result
 from locator.input import load_tt, read_model_list, read_input
@@ -65,6 +65,7 @@ def main(input_file, output_file, plot_output=False):
     if plot_output:
         plot(p, dep=dep, dis=dis)
         plot_phases(tt, p, phase_list, tt_meas, sigma)
+        plot_models(p, files, tt_path)
     write_result(file_out=output_file,
                  p=p, dep=dep, dis=dis,
                  phase_list=phase_list,
