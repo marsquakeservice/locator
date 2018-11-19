@@ -1,7 +1,19 @@
 from __future__ import print_function
 import numpy as np
-from obspy import UTCDateTime
 from h5py import File
+
+def calc_origin_time(p, t_ref, tt_P):
+    # Calculate origin time PDF using weighted histogram over P travel
+    # times. This works because code uses P-arrival as time 0 elsewhere
+    origin_pdf, origin_times = np.histogram(a=-tt_P.flatten(),
+                                            weights=p.flatten(),
+                                            bins=np.linspace(-1200, 0, 120),
+                                            density=True)
+    time_bin_mid = (origin_times[0:-1] + origin_times[1:]) / 2.
+    origin_time_sum = UTCDateTime(np.sum(origin_pdf * (time_bin_mid))
+                                  / np.sum(origin_pdf) + t_ref)
+    return origin_pdf, origin_time_sum, time_bin_mid
+
 
 def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref):
     p_dist = np.sum(p, axis=(0, 1))
@@ -39,19 +51,6 @@ def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref):
                      tt_meas=tt_meas,
                      t_ref=t_ref,
                      origin_time=origin_time_sum)
-
-
-def calc_origin_time(p, t_ref, tt_P):
-    # Calculate origin time PDF using weighted histogram over P travel
-    # times. This works because code uses P-arrival as time 0 elsewhere
-    origin_pdf, origin_times = np.histogram(a=-tt_P.flatten(),
-                                            weights=p.flatten(),
-                                            bins=np.linspace(-1200, 0, 120),
-                                            density=True)
-    time_bin_mid = (origin_times[0:-1] + origin_times[1:]) / 2.
-    origin_time_sum = UTCDateTime(np.sum(origin_pdf * (time_bin_mid))
-                                  / np.sum(origin_pdf) + t_ref)
-    return origin_pdf, origin_time_sum, time_bin_mid
 
 
 def _write_prob(f, **kwargs):

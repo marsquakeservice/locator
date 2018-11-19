@@ -15,8 +15,10 @@ model_path = '../tt/*.h5'
 model_list = glob.glob(model_path)
 waveform_path = '/opt/InSight_MSSROT/mss_event.mseed'
 
-t_post = 3600
+t_post = 10800
 t_pre = 50
+
+fmin = 1./50.
 
 def load_H5(fnam):
     with File(fnam, 'r') as f:
@@ -28,7 +30,7 @@ def load_H5(fnam):
     return p, depths, distances, phase_list, t_ref
 
 
-def plot_cwf(tr, ax, t_ref=0, fmin=1./30, fmax=1./2):
+def plot_cwf(tr, ax, t_ref=0, fmin=1./50, fmax=1./2):
     from obspy.signal.tf_misfit import cwt
     npts = tr.stats.npts
     dt = tr.stats.delta
@@ -76,14 +78,13 @@ ax[3].legend(ncol=2)
 st = read(waveform_path)
 st.differentiate()
 st.filter('lowpass', freq=1./2., zerophase=True)
-st.filter('highpass', freq=1./30., zerophase=True)
+st.filter('highpass', freq=fmin, zerophase=True)
 st.trim(starttime=UTCDateTime(t_ref - t_pre),
         endtime=UTCDateTime(t_ref + t_post))
 
 for i in range(0, 3):
-    # ax[i].plot(st[i].times() + t_ref - t_pre, st[i].data)
-    plot_cwf(st[i], ax[i], t_ref=-t_pre, #t_ref - t_pre,
-             fmax=1)
+    plot_cwf(st[i], ax[i], t_ref=-t_pre,
+             fmax=1, fmin=fmin)
     ax[i].grid(axis='x')
     ax[i].set_ylabel('period / seconds')
 ax[3].set_xlim(-t_pre, t_post)
@@ -95,7 +96,7 @@ ax[3].set_xlim(-t_pre, 1000)
 fig.savefig('phase_prediction_spec.png', dpi=200)
 
 st.integrate()
-st.filter('highpass', freq=1./30., zerophase=True)
+st.filter('highpass', freq=fmin, zerophase=True)
 for i in range(0, 3):
     ax[i].clear()
     ax[i].plot(st[i].times() - t_pre, st[i].data)
