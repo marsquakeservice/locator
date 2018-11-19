@@ -14,6 +14,7 @@ install:
   - pip install coveralls
   - wget -q https://polybox.ethz.ch/index.php/s/ibufo2dYhyUfu6j/download -O $HOME/250models.tar.bz2
   - tar -xf $HOME/250models.tar.bz2 -C locator/data/models/data/bodywave/
+  - ln -s sstaehler/locator $HOME/locator
 
 script:
   #- coverage run main.py locator/data/locator_input.yaml locator/data/locator_output.yaml --plot

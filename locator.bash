@@ -17,4 +17,5 @@ echo -e "$STDIN" > $LOG_IN
 python $EXEC $LOG_IN $LOG_OUT --plot 
 cat $LOG_OUT
 
+xdg-open depth_distance.png & 
 exit 1
