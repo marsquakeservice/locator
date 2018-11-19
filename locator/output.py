@@ -1,6 +1,7 @@
 from __future__ import print_function
 import numpy as np
 from h5py import File
+from obspy import UTCDateTime
 
 def calc_origin_time(p, t_ref, tt_P):
     # Calculate origin time PDF using weighted histogram over P travel
