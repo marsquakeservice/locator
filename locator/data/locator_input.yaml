@@ -1,4 +1,4 @@
-velocity_model: simon.2018-09-17
+velocity_model: test_01
 velocity_model_uncertainty: 1.5
 phases:
  -

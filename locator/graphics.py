@@ -1,8 +1,12 @@
 import numpy as np
+from os.path import join as pjoin
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 
-def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None, **kwargs):
+def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None,
+                           scatter=False, **kwargs):
     fig = plt.figure(**kwargs)
 
     levels = np.sqrt(np.max(z)) * np.asarray((0.0, 0.05, 0.2, 0.5, 0.75, 1.0))
@@ -19,12 +23,19 @@ def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None, **kwargs):
     ax_x.get_xaxis().set_visible(False)
     ax_x.get_yaxis().set_visible(False)
 
-    cf = ax_2D.contourf(x, y, np.sqrt(z), cmap='afmhot_r', levels=levels)
     marg_x = np.sum(z, axis=0)
     ax_x.plot(x, marg_x)
     marg_y = np.sum(z, axis=1)
     ax_y.plot(marg_y, y)
-    ax_x.set_xlim(x[0], x[-1])
+    if scatter:
+        xx, yy = np.meshgrid(x, y)
+        cf = ax_2D.scatter(xx, yy, c=np.sqrt(z), cmap='afmhot_r', marker='+')
+    else:
+        cf = ax_2D.contourf(x, y, np.sqrt(z), cmap='afmhot_r', levels=levels)
+
+    # ax_x.plot(x, np.sum(z, axis=0))
+    # ax_y.plot(np.sum(z, axis=1), y)
+    ax_x.set_xlim(x[0], x[-1])#
     ax_y.set_ylim(y[0], y[-1])
 
     # Calculate mean values and mark them
@@ -64,13 +75,42 @@ def plot(p, dis, dep):
     #plt.savefig('depth_distance.png')
     plt.close('all')
 
+
+def plot_models(p, files, tt_path):
+    from h5py import File
     # Model likelihood plot
-    plt.plot(np.sum(p, axis=(1, 2)), '.')
+    models_p = np.sum(p, axis=(1, 2))
+    plt.plot(models_p, '.')
     plt.xlabel('Model index')
     plt.ylabel('likelihood')
     plt.tight_layout()
     plt.savefig('model_likelihood.png')
     plt.close('all')
+    models_p /= max(models_p)
+    fig, ax = plt.subplots(1, 2, figsize=(10,7))
+    for fnam, model_p in zip(files, models_p):
+        with File(pjoin(tt_path, 'tt', fnam)) as f:
+            radius = np.asarray(f['mantle/radius'])
+            radius = (max(radius) - radius) * 1e-3
+            for a in ax:
+                lp,  = a.plot(f['mantle/vp'], radius, c='lightgrey',
+                              alpha=0.5, zorder=2)
+                ls,  = a.plot(f['mantle/vs'], radius,c='lightgrey',
+                              alpha=0.5, zorder=2)
+                lp,  = a.plot(f['mantle/vp'], radius, c='darkblue',
+                              alpha=model_p**2, zorder=20)
+                ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
+                              alpha=model_p**2, zorder=20)
+    ax[0].set_ylim(2200, 0)
+    ax[1].set_ylim(220, 0)
+    ax[1].legend((lp, ls), ('vp', 'vs'))
+    for a in ax:
+        a.set_xlabel('velocity / m/s')
+        a.set_ylabel('depth / km')
+
+    plt.savefig('velocity_models.png')
+
+
 
 
 def plot_phases(tt, p, phase_list, tt_meas, sigma):
