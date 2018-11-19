@@ -1,0 +1,58 @@
+velocity_model: MQSORT.2018-09-17
+velocity_model_uncertainty: 1.5
+phases:
+ -
+   code: S
+   datetime: 2019-07-19T13:49:41.442844Z
+   uncertainty_lower: 4.0648
+   uncertainty_upper: 4.0649
+   uncertainty_model: uniform
+
+ -
+   code: P
+   datetime: 2019-07-19T13:42:12.084446Z
+   uncertainty_lower: 1
+   uncertainty_upper: 1
+   uncertainty_model: uniform
+
+ -
+   code: G1
+   datetime: 2019-07-19T13:58:21.934814Z
+   uncertainty_lower: 48.9134
+   uncertainty_upper: 38.2801
+   uncertainty_model: uniform
+
+ -
+   code: G1
+   datetime: 2019-07-19T13:58:11.301392Z
+   uncertainty_lower: 40.4067
+   uncertainty_upper: 31.9002
+   uncertainty_model: uniform
+
+ -
+   code: G1
+   datetime: 2019-07-19T13:58:02.794678Z
+   uncertainty_lower: 42.5333
+   uncertainty_upper: 38.2802
+   uncertainty_model: uniform
+
+ -
+   code: PP
+   datetime: 2019-07-19T13:43:13.719052Z
+   uncertainty_lower: 2.6947
+   uncertainty_upper: 4.7771
+   uncertainty_model: uniform
+
+ -
+   code: pP
+   datetime: 2019-07-19T13:42:20.19119Z
+   uncertainty_lower: 3.1846
+   uncertainty_upper: 3.6747
+   uncertainty_model: uniform
+
+ -
+   code: SS
+   datetime: 2019-07-19T13:50:51.883847Z
+   uncertainty_lower: 20
+   uncertainty_upper: 20
+   uncertainty_model: uniform
