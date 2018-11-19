@@ -80,8 +80,10 @@ def plot_models(p, files, tt_path):
             radius = np.asarray(f['mantle/radius'])
             radius = (max(radius) - radius) * 1e-3
             for a in ax:
-                lp,  = a.plot(f['mantle/vp'], radius, c='darkblue', alpha=model_p)
-                ls,  = a.plot(f['mantle/vs'], radius,c='darkred', alpha=model_p)
+                lp,  = a.plot(f['mantle/vp'], radius, c='darkblue', 
+                              alpha=model_p**2)
+                ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
+                              alpha=model_p**2)
     ax[0].set_ylim(3590, 0)
     ax[1].set_ylim(120, 0)
     ax[1].legend((lp, ls), ('vp', 'vs'))
