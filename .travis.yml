@@ -14,14 +14,17 @@ install:
   - pip install coveralls
   - wget -q https://polybox.ethz.ch/index.php/s/ibufo2dYhyUfu6j/download -O $HOME/250models.tar.bz2
   - tar -xf $HOME/250models.tar.bz2 -C locator/data/models/data/bodywave/
-  - ln -s sstaehler/locator $HOME/locator
 
 script:
-  #- coverage run main.py locator/data/locator_input.yaml locator/data/locator_output.yaml --plot
-  - ls -l $HOME/locator/
-  - cat locator/data/locator_input.yaml | ./locator.bash
+  # - ln -s sstaehler/locator $HOME/
+  # - ls -l $HOME/locator/
+  # - cat locator/data/locator_input.yaml | ./locator.bash
+
+  - coverage run main.py locator/data/locator_input.yaml locator/data/locator_output.yaml --plot
   - python locator/test_h5_output.py locator_output_19-01-03T1500.h5 locator/data/tests/locator_output_ref.h5 -p 1e-5
-  - cat locator/data/locator_input_20190719.yaml | ./locator.bash
+
+  - coverage run main.py locator/data/locator_input_20190719.yaml locator/data/locator_output_20190719.yaml --plot
+  #- cat locator/data/locator_input_20190719.yaml | ./locator.bash
   - python locator/test_h5_output.py locator_output_19-07-19T1333.h5 locator/data/tests/locator_output_ref_190719.h5 -p 1e-5
 
 after_success:
