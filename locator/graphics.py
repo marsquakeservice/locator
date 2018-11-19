@@ -80,12 +80,16 @@ def plot_models(p, files, tt_path):
             radius = np.asarray(f['mantle/radius'])
             radius = (max(radius) - radius) * 1e-3
             for a in ax:
-                lp,  = a.plot(f['mantle/vp'], radius, c='darkblue', 
-                              alpha=model_p**2)
+                lp,  = a.plot(f['mantle/vp'], radius, c='lightgrey',
+                              alpha=0.5, zorder=2)
+                ls,  = a.plot(f['mantle/vs'], radius,c='lightgrey',
+                              alpha=0.5, zorder=2)
+                lp,  = a.plot(f['mantle/vp'], radius, c='darkblue',
+                              alpha=model_p**2, zorder=20)
                 ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
-                              alpha=model_p**2)
-    ax[0].set_ylim(3590, 0)
-    ax[1].set_ylim(120, 0)
+                              alpha=model_p**2, zorder=20)
+    ax[0].set_ylim(2200, 0)
+    ax[1].set_ylim(220, 0)
     ax[1].legend((lp, ls), ('vp', 'vs'))
     for a in ax:
         a.set_xlabel('velocity / m/s')
