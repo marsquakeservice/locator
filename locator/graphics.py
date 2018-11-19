@@ -5,7 +5,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 
-def plot_2D_with_marginals(x, y, z, **kwargs):
+def plot_2D_with_marginals(x, y, z, scatter=False, **kwargs):
     fig = plt.figure(**kwargs)
 
     levels = np.sqrt(np.max(z)) * np.asarray((0.0, 0.05, 0.2, 0.5, 0.75, 1.0))
@@ -21,7 +21,12 @@ def plot_2D_with_marginals(x, y, z, **kwargs):
     ax_x.get_xaxis().set_visible(False)
     ax_x.get_yaxis().set_visible(False)
 
-    cf = ax_2D.contourf(x, y, np.sqrt(z), cmap='afmhot_r', levels=levels)
+    if scatter:
+        xx, yy = np.meshgrid(x, y)
+        cf = ax_2D.scatter(xx, yy, c=np.sqrt(z), cmap='afmhot_r', marker='+')
+    else:
+        cf = ax_2D.contourf(x, y, np.sqrt(z), cmap='afmhot_r', levels=levels)
+
     ax_x.plot(x, np.sum(z, axis=0))
     ax_y.plot(np.sum(z, axis=1), y)
     ax_x.set_xlim(x[0], x[-1])
