@@ -3,6 +3,7 @@ import numpy as np
 from h5py import File
 from obspy import UTCDateTime
 from platform import uname
+import sys
 
 def calc_origin_time(p, t_ref, tt_P):
     # Calculate origin time PDF using weighted histogram over P travel
@@ -46,10 +47,14 @@ def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref,
     ddscore = ddscore.T.tolist()
 
 
-    # Get unamy stuff
-    uname_dict = uname()._asdict()
-    uname_fmt = "\"uname: ('{system}', '{node}', '{release}', '{version}'" + \
-        ", '{machine}', '{processor}')\""
+    # Get unamy stuff TODO: Python 2 version
+    if sys.version_info.major == 3:
+        uname_dict = uname()._asdict()
+        uname_fmt = "\"uname: ('{system}', '{node}', '{release}', '{version}'" + \
+            ", '{machine}', '{processor}')\""
+        uname_string = uname_fmt.format(**uname_dict)
+    else:
+        uname_string = '\"%s\"' % sys.version.format('%s')
 
     # Write serialized YAML output for the GUI.
     # TODO: Might be something wrong with the origin times
@@ -63,7 +68,7 @@ def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref,
         _write_single(f, depth_sum=depth_sum, distance_sum=dist_sum,
                       depth_phase_count=int('pP' in phase_list),
                       origin_time_sum=origin_time_sum,
-                      system_configuration=uname_fmt.format(**uname_dict))
+                      system_configuration=uname_string)
 
     _write_model_misfits(p, origin_time_sum)
 
