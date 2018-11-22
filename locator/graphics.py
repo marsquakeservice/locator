@@ -5,10 +5,12 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 
-def plot_2D_with_marginals(x, y, z, scatter=False, **kwargs):
+def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None,
+                           scatter=False, **kwargs):
     fig = plt.figure(**kwargs)
 
     levels = np.sqrt(np.max(z)) * np.asarray((0.0, 0.05, 0.2, 0.5, 0.75, 1.0))
+    z_int = np.sum(z, axis=None)
 
     # Central 2D plot
     ax_2D = fig.add_axes([0.10, 0.10, 0.76, 0.72], label='2D')
@@ -21,30 +23,36 @@ def plot_2D_with_marginals(x, y, z, scatter=False, **kwargs):
     ax_x.get_xaxis().set_visible(False)
     ax_x.get_yaxis().set_visible(False)
 
+    marg_x = np.sum(z, axis=0)
+    ax_x.plot(x, marg_x)
+    marg_y = np.sum(z, axis=1)
+    ax_y.plot(marg_y, y)
     if scatter:
         xx, yy = np.meshgrid(x, y)
         cf = ax_2D.scatter(xx, yy, c=np.sqrt(z), cmap='afmhot_r', marker='+')
     else:
         cf = ax_2D.contourf(x, y, np.sqrt(z), cmap='afmhot_r', levels=levels)
 
-    ax_x.plot(x, np.sum(z, axis=0))
-    ax_y.plot(np.sum(z, axis=1), y)
-    ax_x.set_xlim(x[0], x[-1])
+    # ax_x.plot(x, np.sum(z, axis=0))
+    # ax_y.plot(np.sum(z, axis=1), y)
+    ax_x.set_xlim(x[0], x[-1])#
     ax_y.set_ylim(y[0], y[-1])
 
-    ax_2D.set_xlabel('distance / degree')
-    ax_2D.set_ylabel('depth / km')
+    # Calculate mean values and mark them
+    mean_x = np.sum(marg_x * x / z_int)
+    ax_x.axvline(x=mean_x, linestyle='dashed', color='black')
+    mean_y = np.sum(marg_y * y / z_int)
+    ax_y.axhline(y=mean_y, linestyle='dashed', color='black')
 
-    # ax_x.set_xticklabels([])
-    # ax_x.set_yticklabels([])
-    # ax_y.set_xticklabels([])
-    # ax_y.set_yticklabels([])
+    ax_2D.set_xlabel(xlabel)
+    ax_2D.set_ylabel(ylabel)
 
-    mappable = ax_2D.collections[0]
-    cb = plt.colorbar(mappable=cf, cax=ax_cb)
+    plt.colorbar(mappable=cf, cax=ax_cb)
     ax_2D.set_ylim(150, 0)
 
-    fig.savefig('depth_distance.png')
+    return fig, [ax_2D, ax_x, ax_y]
+
+#def plot_origin_time()
 
 
 def plot(p, dis, dep):
@@ -53,7 +61,12 @@ def plot(p, dis, dep):
     # Depth-distance matrix
     depthdist = np.sum(p, axis=(0)) / nmodel
 
-    plot_2D_with_marginals(dis, dep, depthdist, figsize=(8,5))
+    fig, axs = plot_2D_with_marginals(dis, dep, depthdist,
+                                      xlabel='distance / degree',
+                                      ylabel='depth / km',
+                                      figsize=(8,5))
+    fig.savefig('depth_distance.png')
+
     #plt.contourf(dis, dep, depthdist)
     #plt.colorbar()
     #plt.xlabel('distance')
