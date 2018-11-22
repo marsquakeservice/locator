@@ -5,6 +5,9 @@ from obspy import UTCDateTime
 from platform import uname
 import sys
 
+# let YAML output fit into a IEEE 754 single format float
+YAML_OUTPUT_SMALLEST_FLOAT_ABOVE_ZERO = 1.0e-37
+
 def calc_origin_time(p, t_ref, tt_P):
     # Calculate origin time PDF using weighted histogram over P travel
     # times. This works because code uses P-arrival as time 0 elsewhere
@@ -38,12 +41,14 @@ def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref,
 
     # Create depth-distance score list
     p_depdis /= p_depdis.max(axis=None)
-    bol = p_depdis.flatten() > p_threshold
+    p_depdis = p_depdis.flatten()
+    p_depdis[p_depdis < YAML_OUTPUT_SMALLEST_FLOAT_ABOVE_ZERO] = 0.0
+    bol = p_depdis > p_threshold
     depdep, disdis = np.meshgrid(dep, dis)
     ddscore = np.zeros((3, sum(bol)))
     ddscore[0, :] = depdep.flatten()[bol]
     ddscore[1, :] = disdis.flatten()[bol]
-    ddscore[2, :] = p_depdis.flatten()[bol]
+    ddscore[2, :] = p_depdis[bol]
     ddscore = ddscore.T.tolist()
 
 
@@ -87,6 +92,8 @@ def _listify(val, p_val):
     :param p_val: np.ndarray
     :return: list
     """
+
+    p_val[p_val < YAML_OUTPUT_SMALLEST_FLOAT_ABOVE_ZERO] = 0.0
     pdf_sum = np.zeros((len(val), 2))
     pdf_sum[:, 0] = val
     pdf_sum[:, 1] = p_val
