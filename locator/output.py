@@ -8,6 +8,7 @@ import sys
 # let YAML output fit into a IEEE 754 single format float
 YAML_OUTPUT_SMALLEST_FLOAT_ABOVE_ZERO = 1.0e-37
 
+
 def calc_origin_time(p, t_ref, tt_P):
     # Calculate origin time PDF using weighted histogram over P travel
     # times. This works because code uses P-arrival as time 0 elsewhere
@@ -24,7 +25,8 @@ def calc_origin_time(p, t_ref, tt_P):
     return origin_pdf, origin_time_sum, time_bin_mid
 
 
-def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref,
+def write_result(file_out, model_name,
+                 p, dep, dis, phase_list, tt_meas, tt_P, t_ref, baz,
                  p_threshold=1e-3):
     p_dist = np.sum(p, axis=(0, 1))
     p_depth = np.sum(p, axis=(0, 2))
@@ -77,10 +79,12 @@ def write_result(file_out, p, dep, dis, phase_list, tt_meas, tt_P, t_ref,
 
     _write_model_misfits(p, origin_time_sum)
 
-    _write_h5_output(p, depths=dep, distances=dis,
+    _write_h5_output(p, model_name=model_name,
+                     depths=dep, distances=dis,
                      phase_list=phase_list,
                      tt_meas=tt_meas,
                      t_ref=t_ref,
+                     baz=baz,
                      origin_time=origin_time_sum)
 
 
@@ -150,14 +154,18 @@ def _write_model_misfits(p, origin_time_sum):
         for imodel, model in enumerate(p_model):
             f.write('%5d, %8.3e\n' % (imodel, model))
 
-def _write_h5_output(p, depths, distances, phase_list, tt_meas, t_ref, origin_time):
+def _write_h5_output(p, model_name, depths, distances,
+                     phase_list, tt_meas, t_ref, baz, origin_time):
     fnam = 'locator_output_%s.h5' % \
            (origin_time.strftime(format='%y-%m-%dT%H%M'))
 
     with File(fnam, 'w') as f:
         f.create_dataset('p', data=p)
+        f.create_dataset('model_name', data=model_name)
         f.create_dataset('depths', data=depths)
         f.create_dataset('distances', data=distances)
         f.create_dataset('tt_meas', data=tt_meas)
         f.create_dataset('t_ref', data=t_ref)
+        f.create_dataset('backazimuth', data=baz)
         f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore") for n in phase_list])
+        f.create_dataset('origin_time', data=float(origin_time))
