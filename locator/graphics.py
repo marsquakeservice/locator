@@ -113,7 +113,7 @@ def plot_models(p, files, tt_path):
 
 
 
-def plot_phases(tt, p, phase_list, tt_meas, sigma):
+def plot_phases(tt, p, phase_list, freqs, tt_meas, sigma):
     nphase = len(phase_list)
     fig, axs = plt.subplots(nrows=nphase, ncols=1, figsize=(6, 1.5 + nphase))
 
@@ -126,7 +126,11 @@ def plot_phases(tt, p, phase_list, tt_meas, sigma):
         ax.axvline(x=tt_meas[iax] - sigma[iax], c='r', ls='--')
         ax.axvline(x=tt_meas[iax] + sigma[iax], c='r', ls='--')
         ax.axvline(x=phase_mean, c='darkgreen', lw=2)
-        ax.text(x=0.05, y=0.5, s=phase_list[iax],
+        if phase_list[iax] in ['R1', 'G1']:
+            phase_string = '%s %3ds'% (phase_list[iax], 1./freqs[iax])
+        else:
+            phase_string = phase_list[iax]
+        ax.text(x=0.05, y=0.5, s=phase_string,
                 fontsize=14, weight='bold',
                 transform = ax.transAxes)
     plt.tight_layout()
