@@ -67,9 +67,10 @@ def main(input_file, output_file, plot_output=False):
         plot_phases(tt, p, phase_list, freqs, tt_meas, sigma)
         plot_models(p, files, tt_path)
     write_result(file_out=output_file,
+                 model_name=model_name,
                  p=p, dep=dep, dis=dis,
                  phase_list=phase_list,
-                 tt_meas=tt_meas,
+                 tt_meas=tt_meas, baz=backazimuth,
                  tt_P=tt_P, t_ref=t_ref)
 
 
