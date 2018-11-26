@@ -4,6 +4,7 @@ from obspy import UTCDateTime
 from scipy.interpolate import interp2d
 from yaml import load
 from os.path import join as pjoin
+import sys
 
 _type = dict(R1 = 'rayleigh',
              G1 = 'love')
