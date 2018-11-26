@@ -33,10 +33,10 @@ def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None,
     else:
         cf = ax_2D.contourf(x, y, np.sqrt(z), cmap='afmhot_r', levels=levels)
 
-    # ax_x.plot(x, np.sum(z, axis=0))
-    # ax_y.plot(np.sum(z, axis=1), y)
-    ax_x.set_xlim(x[0], x[-1])#
+    ax_x.set_xlim(x[0], x[-1])
+    ax_x.set_ylim(0, max(marg_x))
     ax_y.set_ylim(y[0], y[-1])
+    ax_y.set_xlim(0, max(marg_y))
 
     # Calculate mean values and mark them
     mean_x = np.sum(marg_x * x / z_int)
@@ -47,12 +47,12 @@ def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None,
     ax_2D.set_xlabel(xlabel)
     ax_2D.set_ylabel(ylabel)
 
+    ax_2D.tick_params(bottom=True, top=True, left=True, right=True,
+                      labelbottom=True, labelleft=True, labeltop=False, labelright=False)
+
     plt.colorbar(mappable=cf, cax=ax_cb)
-    ax_2D.set_ylim(150, 0)
 
     return fig, [ax_2D, ax_x, ax_y]
-
-#def plot_origin_time()
 
 
 def plot(p, dis, dep):
@@ -65,14 +65,8 @@ def plot(p, dis, dep):
                                       xlabel='distance / degree',
                                       ylabel='depth / km',
                                       figsize=(8,5))
+    axs[0].set_ylim(150, 0)
     fig.savefig('depth_distance.png')
-
-    #plt.contourf(dis, dep, depthdist)
-    #plt.colorbar()
-    #plt.xlabel('distance')
-    #plt.ylabel('depth')
-    #plt.tight_layout()
-    #plt.savefig('depth_distance.png')
     plt.close('all')
 
 
@@ -86,6 +80,8 @@ def plot_models(p, files, tt_path):
     plt.tight_layout()
     plt.savefig('model_likelihood.png')
     plt.close('all')
+
+    # Plot with all mantle profiles
     models_p /= max(models_p)
     fig, ax = plt.subplots(1, 2, figsize=(10,7))
     for fnam, model_p in zip(files, models_p):
@@ -111,17 +107,17 @@ def plot_models(p, files, tt_path):
     plt.savefig('velocity_models.png')
 
 
-
-
 def plot_phases(tt, p, phase_list, tt_meas, sigma):
     nphase = len(phase_list)
     fig, axs = plt.subplots(nrows=nphase, ncols=1, figsize=(6, 1.5 + nphase))
 
     for iax, ax in enumerate(axs):
+        width = max(50., sigma[iax] * 2.0)
         phase_mean = np.sum(tt[:, :, :, iax] * p, axis=None) / np.sum(p, axis=None)
         ax.hist(tt[:, :, :, iax].flatten(),
                 weights=p[:, :, :].flatten(),
-                bins=np.linspace(tt_meas[iax] - 50, tt_meas[iax] + 50, 100))
+                bins=np.linspace(tt_meas[iax] - width,
+                                 tt_meas[iax] + width, 100))
         ax.axvline(x=tt_meas[iax], c='r')
         ax.axvline(x=tt_meas[iax] - sigma[iax], c='r', ls='--')
         ax.axvline(x=tt_meas[iax] + sigma[iax], c='r', ls='--')
