@@ -64,7 +64,7 @@ def main(input_file, output_file, plot_output=False):
 
     if plot_output:
         plot(p, dep=dep, dis=dis)
-        plot_phases(tt, p, phase_list, tt_meas, sigma)
+        plot_phases(tt, p, phase_list, freqs, tt_meas, sigma)
         plot_models(p, files, tt_path)
     write_result(file_out=output_file,
                  p=p, dep=dep, dis=dis,
