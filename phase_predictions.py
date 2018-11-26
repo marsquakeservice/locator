@@ -14,7 +14,7 @@ from os import environ as env
 
 t_post = 10800
 t_pre = 50
-fmin = 1./150.
+fmin = 1./75.
 
 def define_arguments():
     helptext = 'Predict phase arrivals based on locator solution'
@@ -55,7 +55,7 @@ def plot_cwf(tr, ax, t_ref=0, fmin=1./50, fmax=1./2):
 
     m = ax.pcolormesh(x, y, np.log10((scalogram)) * 10.,
                       cmap='plasma',
-                      vmin=-100, vmax=-82)
+                      vmin=-110, vmax=-72)
 
 
 def main(args):
@@ -121,12 +121,15 @@ def main(args):
         ax[i].set_ylabel('period / seconds')
 
 
+    tt_r_res = tt_r[:,:,:,1:].reshape((-1, nfreq))
     tt_g_res = tt_g[:,:,:,1:].reshape((-1, nfreq))
     p_flat = p.reshape(tt_g_res.shape[0])
     p_flat /= p_flat.max()
-    bol = p_flat > 0.01
+    bol = p_flat > 0.1
+    ax[0].plot(tt_r_res[bol, :].T - t_pre, 1./np.array(freqs[1:]),
+               zorder=100, color='k', alpha=0.05)
     ax[2].plot(tt_g_res[bol, :].T - t_pre, 1./np.array(freqs[1:]),
-               zorder=100, color='k', alpha=0.1)
+               zorder=100, color='k', alpha=0.05)
     # for icomb in bol: # range(0, tt_r_res.shape[0]):
     #     ax[0].plot(tt_r_res[icomb, :], 1./np.array(freqs[1:]), zorder=100)
     ax[3].set_xlim(-t_pre, t_post)
