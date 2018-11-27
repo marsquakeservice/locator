@@ -29,14 +29,18 @@ def define_arguments():
 
 def load_H5(fnam):
     with File(fnam, 'r') as f:
-        model_name = f['model_name'].value
-        p = f['p'].value
-        depths = f['depths'].value
-        distances = f['distances'].value
-        phase_list = f['phase_list'].value
-        t_ref = f['t_ref'].value
-        baz = f['backazimuth'].value
-    return p, model_name, depths, distances, phase_list, t_ref, baz
+        H5 = {
+            'model_name': f['model_name'].value,
+            'p': f['p'].value,
+            'depths': f['depths'].value,
+            'distances': f['distances'].value,
+            'phase_list': f['phase_list'].value,
+            't_ref': f['t_ref'].value,
+            'baz': f['backazimuth'].value,
+            'tt_meas': f['tt_meas'].value,
+            'freqs': f['freqs'].value,
+            'periods': 1./f['freqs'].value}
+    return H5 #p, model_name, depths, distances, phase_list, freqs, t_ref, baz
 
 
 def plot_cwf(tr, ax, t_ref=0, fmin=1./50, fmax=1./2):
@@ -64,8 +68,9 @@ def main(args):
                              ]
     args = define_arguments()
     fnam_locatoroutput = args.locator_output
-    p, model_name, depths, distances, phase_list, t_ref, baz = load_H5(fnam_locatoroutput)
-    t0 = UTCDateTime(t_ref)
+    H5 = load_H5(fnam_locatoroutput)
+    # p, model_name, depths, distances, phase_list, freqs, t_ref, baz = load_H5(fnam_locatoroutput)
+    t0 = UTCDateTime(H5['t_ref'])
     stat_net, stat_station = env['STATION'].split('.')
     waveform_dir = pjoin(env['WAVEFORM_DIR'],
                          'waveform',
@@ -73,45 +78,49 @@ def main(args):
                          stat_net, stat_station)
     tt_path = pjoin(env['SINGLESTATION'],
                     'data', 'bodywave',
-                    model_name)
+                    H5['model_name'])
     model_path = pjoin(tt_path,
-                       '%s.models' % model_name)
+                       '%s.models' % H5['model_name'])
     weight_path = pjoin(tt_path,
-                        '%s.weights' % model_name)
+                        '%s.weights' % H5['model_name'])
     files, weights = read_model_list(model_path, weight_path)
 
     # Load body waves
-    tt = load_tt(files=files, tt_path=tt_path, phase_list=phase_list_prediction,
-                 freqs=np.ones(len(phase_list_prediction)),
-                 backazimuth=baz)[0]
+    tt = load_tt(files=files, 
+                 tt_path=tt_path, 
+                 phase_list=phase_list_prediction,
+                 freqs=H5['freqs'],
+                 backazimuth=H5['baz'])[0]
 
     nfreq = 21
     p0 = 5
-    freqs = [1.]
+    freqs_sw = [1.]
     phase_list = ['P']
     for i in range(nfreq):
-        freqs.append(1./p0 / 2.**(i/4.))
+        freqs_sw.append(1./p0 / 2.**(i/4.))
         phase_list.append('R1')
 
-    tt_r = load_tt(files=files, tt_path=tt_path, phase_list=phase_list,
-                   freqs=freqs,
-                   backazimuth=baz)[0]
+    tt_r = load_tt(files=files, tt_path=tt_path, 
+                   phase_list=phase_list,
+                   freqs=freqs_sw,
+                   backazimuth=H5['baz'])[0]
     phase_list = ['P']
     for i in range(nfreq):
         phase_list.append('G1')
-    tt_g = load_tt(files=files, tt_path=tt_path, phase_list=phase_list,
-                   freqs=freqs,
-                   backazimuth=baz)[0]
-    st = read_waveform(waveform_dir, t0, stat=stat_station, net=stat_net, baz=baz)
+    tt_g = load_tt(files=files, tt_path=tt_path, 
+                   phase_list=phase_list,
+                   freqs=freqs_sw,
+                   backazimuth=H5['baz'])[0]
+    st = read_waveform(waveform_dir, t0, stat=stat_station, net=stat_net, baz=H5['baz'])
 
 
     fig, ax = plt.subplots(nrows=4, ncols=1,
                            figsize=(10, 10), sharex='col')
     for iphase, phase in enumerate(phase_list_prediction):
-        y, x = np.histogram(tt[:, :, :, iphase].flatten(), weights=p.flatten(),
+        y, x = np.histogram(tt[:, :, :, iphase].flatten(), weights=H5['p'].flatten(),
                             bins=np.arange(-t_pre, t_post, 2),
                             density=False)
-        ax[3].plot(x[1:], y / np.max(np.sqrt(y)), label=phase)
+        ax[3].plot(x[1:], y / np.max((y)), label=phase)
     ax[3].set_ylim(0, 1)
     ax[3].legend(ncol=2)
     for i in range(0, 3):
@@ -123,22 +132,30 @@ def main(args):
 
     tt_r_res = tt_r[:,:,:,1:].reshape((-1, nfreq))
     tt_g_res = tt_g[:,:,:,1:].reshape((-1, nfreq))
-    p_flat = p.reshape(tt_g_res.shape[0])
+    p_flat = H5['p'].reshape(tt_g_res.shape[0])
     p_flat /= p_flat.max()
     bol = p_flat > 0.1
-    ax[0].plot(tt_r_res[bol, :].T - t_pre, 1./np.array(freqs[1:]),
+    ax[0].plot(tt_r_res[bol, :].T, #  - t_pre, 
+               1./np.array(freqs_sw[1:]),
                zorder=100, color='k', alpha=0.05)
-    ax[2].plot(tt_g_res[bol, :].T - t_pre, 1./np.array(freqs[1:]),
+    ax[2].plot(tt_g_res[bol, :].T, # - t_pre, 
+               1./np.array(freqs_sw[1:]),
                zorder=100, color='k', alpha=0.05)
-    # for icomb in bol: # range(0, tt_r_res.shape[0]):
-    #     ax[0].plot(tt_r_res[icomb, :], 1./np.array(freqs[1:]), zorder=100)
+    
+    ax[0].plot(H5['tt_meas'][H5['phase_list']=='R1'], 
+               H5['periods'][H5['phase_list']=='R1'], 'ko',
+               zorder=120)
+    ax[2].plot(H5['tt_meas'][H5['phase_list']=='G1'], 
+               H5['periods'][H5['phase_list']=='G1'], 'ko',
+               zorder=120)
+
     ax[3].set_xlim(-t_pre, t_post)
     ax[3].set_xlabel('time after P / seconds')
     for a in ax[0:3]:
         a.set_ylim(0, 1./fmin)
     plt.tight_layout()
     fig.savefig('phase_prediction_spec_long.png', dpi=200)
-    ax[3].set_xlim(-t_pre, 1000)
+    ax[3].set_xlim(-t_pre, 1200)
     fig.savefig('phase_prediction_spec.png', dpi=200)
 
 
@@ -150,7 +167,7 @@ def main(args):
         ax[i].grid(axis='x')
     ax[3].set_xlim(-t_pre, t_post)
     fig.savefig('phase_prediction_seis_long.png', dpi=200)
-    ax[3].set_xlim(-t_pre, 1000)
+    ax[3].set_xlim(-t_pre, 1200)
     for a in ax[0:3]:
         a.set_ylim(-1e-8, 1e-8)
     fig.savefig('phase_prediction_seis.png', dpi=200)
