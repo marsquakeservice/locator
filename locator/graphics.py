@@ -123,7 +123,8 @@ def plot_phases(tt, p, phase_list, freqs, tt_meas, sigma):
         ax.axvline(x=tt_meas[iax] + sigma[iax], c='r', ls='--')
         ax.axvline(x=phase_mean, c='darkgreen', lw=2)
         if phase_list[iax] in ['R1', 'G1']:
-            phase_string = '%s %3ds'% (phase_list[iax], 1./freqs[iax])
+            phase_string = '%s %3ds'% (phase_list[iax],
+                                       int(1./freqs[iax]))
         else:
             phase_string = phase_list[iax]
         ax.text(x=0.05, y=0.5, s=phase_string,

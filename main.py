@@ -39,39 +39,44 @@ def define_arguments():
 
 
 def main(input_file, output_file, plot_output=False):
-    model_name, phase_list, tt_meas, sigma_pick, freqs, backazimuth, t_ref, sigma_model = read_input(input_file)
+    # model_name, phase_list, tt_meas, sigma_pick, freqs, backazimuth, t_ref, sigma_model = read_input(input_file)
+    input = read_input(input_file)
 
     tt_path = os.path.join(os.environ['SINGLESTATION'], 
                            'data', 'bodywave',
-                           model_name)
+                           input['model_name'])
     model_path=os.path.join(tt_path, 
-                            '%s.models' % model_name)
+                            '%s.models' % input['model_name'])
     weight_path=os.path.join(tt_path,
-                             '%s.weights' % model_name)
+                             '%s.weights' % input['model_name'])
     files, weights = read_model_list(model_path, weight_path)
 
     tt, dep, dis, tt_P = load_tt(files=files,
                                  tt_path=tt_path,
-                                 phase_list=phase_list,
-                                 freqs=freqs,
-                                 backazimuth=backazimuth)
+                                 phase_list=input['phase_list'],
+                                 freqs=input['freqs'],
+                                 backazimuth=input['backazimuth'])
 
     # Total sigma is sigma of modelled travel time plus picking uncertainty
-    sigma = sigma_model + sigma_pick
+    sigma = input['sigma_model'] + input['sigma']
 
     # Calculate probability
-    p = calc_p(dep, dis, sigma, tt, tt_meas, weights)
+    p = calc_p(dep, dis, sigma, tt, input['tt_meas'], weights)
 
     if plot_output:
         plot(p, dep=dep, dis=dis)
-        plot_phases(tt, p, phase_list, freqs, tt_meas, sigma)
+        plot_phases(tt, p, input['phase_list'],
+                    input['freqs'], input['tt_meas'],
+                    input['sigma'])
         plot_models(p, files, tt_path)
     write_result(file_out=output_file,
-                 model_name=model_name,
+                 model_name=input['model_name'],
                  p=p, dep=dep, dis=dis,
-                 phase_list=phase_list,
-                 tt_meas=tt_meas, baz=backazimuth,
-                 tt_P=tt_P, t_ref=t_ref)
+                 phase_list=input['phase_list'],
+                 freqs=input['freqs'],
+                 tt_meas=input['tt_meas'],
+                 baz=input['backazimuth'],
+                 tt_P=tt_P, t_ref=input['t_ref'])
 
 
 if __name__ == '__main__':
@@ -79,7 +84,3 @@ if __name__ == '__main__':
     main(input_file=args.input_file,
          output_file=args.output_file,
          plot_output=args.plot)
-
-
-
-

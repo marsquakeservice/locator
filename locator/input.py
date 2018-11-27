@@ -96,8 +96,16 @@ def read_input(filename):
         model_name = input_yml['velocity_model']
         sigma_model = input_yml['velocity_model_uncertainty']
 
+    input = {'model_name': model_name,
+             'phase_list': phase_list,
+             'tt_meas': tt_meas,
+             'sigma': sigma,
+             'freqs': freqs,
+             'backazimuth': backazimuth,
+             'tt_ref': tt_ref,
+             'sigma_model': sigma_model}
 
-    return model_name, phase_list, tt_meas, sigma, freqs, backazimuth, tt_ref, sigma_model
+    return input # model_name, phase_list, tt_meas, sigma, freqs, backazimuth, tt_ref, sigma_model
 
 
 def serialize_phases(phases):

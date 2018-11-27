@@ -26,7 +26,8 @@ def calc_origin_time(p, t_ref, tt_P):
 
 
 def write_result(file_out, model_name,
-                 p, dep, dis, phase_list, tt_meas, tt_P, t_ref, baz,
+                 p, dep, dis, phase_list, tt_meas, freqs,
+                 tt_P, t_ref, baz,
                  p_threshold=1e-3):
     p_dist = np.sum(p, axis=(0, 1))
     p_depth = np.sum(p, axis=(0, 2))
@@ -83,6 +84,7 @@ def write_result(file_out, model_name,
                      depths=dep, distances=dis,
                      phase_list=phase_list,
                      tt_meas=tt_meas,
+                     freqs=freqs,
                      t_ref=t_ref,
                      baz=baz,
                      origin_time=origin_time_sum)
@@ -155,7 +157,8 @@ def _write_model_misfits(p, origin_time_sum):
             f.write('%5d, %8.3e\n' % (imodel, model))
 
 def _write_h5_output(p, model_name, depths, distances,
-                     phase_list, tt_meas, t_ref, baz, origin_time):
+                     phase_list, tt_meas, t_ref, baz,
+                     freqs, origin_time):
     fnam = 'locator_output_%s.h5' % \
            (origin_time.strftime(format='%y-%m-%dT%H%M'))
 
@@ -164,8 +167,9 @@ def _write_h5_output(p, model_name, depths, distances,
         f.create_dataset('model_name', data=model_name)
         f.create_dataset('depths', data=depths)
         f.create_dataset('distances', data=distances)
+        f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore") for n in phase_list])
         f.create_dataset('tt_meas', data=tt_meas)
+        f.create_dataset('freqs', data=freqs)
         f.create_dataset('t_ref', data=t_ref)
         f.create_dataset('backazimuth', data=baz)
-        f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore") for n in phase_list])
         f.create_dataset('origin_time', data=float(origin_time))
