@@ -76,7 +76,7 @@ def main(input_file, output_file, plot_output=False):
                  freqs=input['freqs'],
                  tt_meas=input['tt_meas'],
                  baz=input['backazimuth'],
-                 tt_P=tt_P, t_ref=input['t_ref'])
+                 tt_P=tt_P, t_ref=input['tt_ref'])
 
 
 if __name__ == '__main__':
