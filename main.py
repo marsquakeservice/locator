@@ -49,7 +49,7 @@ def main(input_file, output_file, plot_output=False):
                             '%s.models' % input['model_name'])
     weight_path=os.path.join(tt_path,
                              '%s.weights' % input['model_name'])
-    files, weights = read_model_list(model_path, weight_path)
+    files, weights, models, prior_weights = read_model_list(model_path, weight_path)
 
     tt, dep, dis, tt_P = load_tt(files=files,
                                  tt_path=tt_path,
@@ -63,20 +63,22 @@ def main(input_file, output_file, plot_output=False):
     # Calculate probability
     p = calc_p(dep, dis, sigma, tt, input['tt_meas'], weights)
 
-    if plot_output:
+    if False: # plot_output:
         plot(p, dep=dep, dis=dis)
         plot_phases(tt, p, input['phase_list'],
                     input['freqs'], input['tt_meas'],
                     input['sigma'])
         plot_models(p, files, tt_path)
     write_result(file_out=output_file,
-                 model_name=input['model_name'],
+                 modelset_name=input['model_name'],
                  p=p, dep=dep, dis=dis,
                  phase_list=input['phase_list'],
                  freqs=input['freqs'],
                  tt_meas=input['tt_meas'],
                  baz=input['backazimuth'],
-                 tt_P=tt_P, t_ref=input['tt_ref'])
+                 tt_P=tt_P, t_ref=input['tt_ref'],
+                 weights=weights,
+                 model_names=models)
 
 
 if __name__ == '__main__':

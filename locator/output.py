@@ -25,9 +25,10 @@ def calc_origin_time(p, t_ref, tt_P):
     return origin_pdf, origin_time_sum, time_bin_mid
 
 
-def write_result(file_out, model_name,
+def write_result(file_out, modelset_name,
                  p, dep, dis, phase_list, tt_meas, freqs,
                  tt_P, t_ref, baz,
+                 weights, model_names,
                  p_threshold=1e-3):
     p_dist = np.sum(p, axis=(0, 1))
     p_depth = np.sum(p, axis=(0, 2))
@@ -80,14 +81,16 @@ def write_result(file_out, model_name,
 
     _write_model_misfits(p, origin_time_sum)
 
-    _write_h5_output(p, model_name=model_name,
+    _write_h5_output(p, modelset_name=modelset_name,
                      depths=dep, distances=dis,
                      phase_list=phase_list,
                      tt_meas=tt_meas,
                      freqs=freqs,
                      t_ref=t_ref,
                      baz=baz,
-                     origin_time=origin_time_sum)
+                     origin_time=origin_time_sum,
+                     weights=weights,
+                     model_names=model_names)
 
 
 def _listify(val, p_val):
@@ -156,18 +159,27 @@ def _write_model_misfits(p, origin_time_sum):
         for imodel, model in enumerate(p_model):
             f.write('%5d, %8.3e\n' % (imodel, model))
 
-def _write_h5_output(p, model_name, depths, distances,
+def _write_h5_output(p, modelset_name, depths, distances,
                      phase_list, tt_meas, t_ref, baz,
-                     freqs, origin_time):
+                     freqs, origin_time, model_names, weights):
     fnam = 'locator_output_%s.h5' % \
            (origin_time.strftime(format='%y-%m-%dT%H%M'))
 
+    # Calculate model misfits
+    models_p = np.sum(p, axis=(1, 2))
+    model_p_all = np.zeros(len(model_names))
+    weight_bol = weights>1e-3
+    model_p_all[weight_bol] = models_p
+
+
     with File(fnam, 'w') as f:
         f.create_dataset('p', data=p)
-        f.create_dataset('model_name', data=model_name)
+        f.create_dataset('modelset_name', data=modelset_name)
         f.create_dataset('depths', data=depths)
         f.create_dataset('distances', data=distances)
         f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore") for n in phase_list])
+        f.create_dataset('model_names', data=[n.encode("utf-8", "ignore") for n in model_names])
+        f.create_dataset('weights', data=weights)
         f.create_dataset('tt_meas', data=tt_meas)
         f.create_dataset('freqs', data=freqs)
         f.create_dataset('t_ref', data=t_ref)

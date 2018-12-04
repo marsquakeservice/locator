@@ -16,9 +16,13 @@ def read_model_list(fnam_models, fnam_weights, weight_lim=1e-5):
     :param fnam_weights: Path to weight file, format: lines of "model name, weight"
     :return: Numpy arrays of file names and weights
     """
+    modelnames = np.loadtxt(fnam_models, dtype=str, usecols=[0])
     fnams = np.loadtxt(fnam_models, dtype=str, usecols=[1])
+    modelnames_weights = np.loadtxt(fnam_weights, dtype=str, usecols=[0])
     weights = np.loadtxt(fnam_weights, dtype=float, usecols=[1])
-    return fnams[weights>weight_lim], weights[weights>weight_lim]
+    if not (modelnames == modelnames_weights).all():
+        raise RuntimeError('Model names have to be identical in model and weight file')
+    return fnams[weights>weight_lim], weights[weights>weight_lim], modelnames, weights
 
 
 def load_tt(files, tt_path, phase_list, freqs, backazimuth):
