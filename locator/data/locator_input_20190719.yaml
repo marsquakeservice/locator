@@ -1,58 +1,114 @@
-velocity_model: MQSORT.2018-09-17
+velocity_model: test_01
 velocity_model_uncertainty: 1.5
+backazimuth:
+   value: 279
+
 phases:
  -
-   code: S
-   datetime: 2019-07-19T13:49:41.442844Z
-   uncertainty_lower: 4.0648
-   uncertainty_upper: 4.0649
+   code: G1
+   datetime: 2019-09-10T16:56:01.307602Z
+   uncertainty_lower: 29.4164
+   uncertainty_upper: 42.7878
+   uncertainty_model: uniform
+   frequency: 0.05000000037
+   frequency_uncertainty_lower: 0.004149800366
+   frequency_uncertainty_upper: 0.004525389634
+
+ -
+   code: G1
+   datetime: 2019-09-10T16:55:59.970504Z
+   uncertainty_lower: 30.7536
+   uncertainty_upper: 24.0681
+   uncertainty_model: uniform
+   frequency: 0.05946035863
+   frequency_uncertainty_lower: 0.004934968626
+   frequency_uncertainty_upper: 0.005381621374
+
+ -
+   code: G1
+   datetime: 2019-09-10T16:56:03.981857Z
+   uncertainty_lower: 42.7876
+   uncertainty_upper: 21.3939
+   uncertainty_model: uniform
+   frequency: 0.07071067877
+   frequency_uncertainty_lower: 0.005868698772
+   frequency_uncertainty_upper: 0.006399861228
+
+ -
+   code: G1
+   datetime: 2019-09-10T16:56:05.318954Z
+   uncertainty_lower: 25.4051
+   uncertainty_upper: 34.7651
+   uncertainty_model: uniform
+   frequency: 0.08408963885
+   frequency_uncertainty_lower: 0.006979098852
+   frequency_uncertainty_upper: 0.007610761148
+
+ -
+   code: R1
+   datetime: 2019-09-10T16:57:08.163498Z
+   uncertainty_lower: 41.4505
+   uncertainty_upper: 54.8218
+   uncertainty_model: uniform
+   frequency: 0.04204481943
+   frequency_uncertainty_lower: 0.003489549426
+   frequency_uncertainty_upper: 0.003805380574
+
+ -
+   code: R1
+   datetime: 2019-09-10T16:56:54.792282Z
+   uncertainty_lower: 37.4391
+   uncertainty_upper: 34.7651
+   uncertainty_model: uniform
+   frequency: 0.05000000037
+   frequency_uncertainty_lower: 0.004149800366
+   frequency_uncertainty_upper: 0.004525389634
+
+ -
+   code: R1
+   datetime: 2019-09-10T16:56:49.443832Z
+   uncertainty_lower: 36.102
+   uncertainty_upper: 30.7537
+   uncertainty_model: uniform
+   frequency: 0.05946035863
+   frequency_uncertainty_lower: 0.004934968626
+   frequency_uncertainty_upper: 0.005381621374
+
+ -
+   code: R1
+   datetime: 2019-09-10T16:56:53.455185Z
+   uncertainty_lower: 29.4165
+   uncertainty_upper: 29.4166
+   uncertainty_model: uniform
+   frequency: 0.07071067877
+   frequency_uncertainty_lower: 0.005868698772
+   frequency_uncertainty_upper: 0.006399861228
+
+ -
+   code: pP
+   datetime: 2019-09-10T16:48:14.999984Z
+   uncertainty_lower: 1.639
+   uncertainty_upper: 0.3725
    uncertainty_model: uniform
 
  -
-   code: P
-   datetime: 2019-07-19T13:42:12.084446Z
+   code: S1
+   datetime: 2019-09-10T16:52:00.620117Z
    uncertainty_lower: 1
    uncertainty_upper: 1
    uncertainty_model: uniform
 
  -
-   code: G1
-   datetime: 2019-07-19T13:58:21.934814Z
-   uncertainty_lower: 48.9134
-   uncertainty_upper: 38.2801
-   uncertainty_model: uniform
-
- -
-   code: G1
-   datetime: 2019-07-19T13:58:11.301392Z
-   uncertainty_lower: 40.4067
-   uncertainty_upper: 31.9002
-   uncertainty_model: uniform
-
- -
-   code: G1
-   datetime: 2019-07-19T13:58:02.794678Z
-   uncertainty_lower: 42.5333
-   uncertainty_upper: 38.2802
+   code: P1
+   datetime: 2019-09-10T16:48:05.818604Z
+   uncertainty_lower: 1
+   uncertainty_upper: 1
    uncertainty_model: uniform
 
  -
    code: PP
-   datetime: 2019-07-19T13:43:13.719052Z
-   uncertainty_lower: 2.6947
-   uncertainty_upper: 4.7771
+   datetime: 2019-09-10T16:48:22.741012Z
+   uncertainty_lower: 1
+   uncertainty_upper: 1
    uncertainty_model: uniform
 
- -
-   code: pP
-   datetime: 2019-07-19T13:42:20.19119Z
-   uncertainty_lower: 3.1846
-   uncertainty_upper: 3.6747
-   uncertainty_model: uniform
-
- -
-   code: SS
-   datetime: 2019-07-19T13:50:51.883847Z
-   uncertainty_lower: 20
-   uncertainty_upper: 20
-   uncertainty_model: uniform

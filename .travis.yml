@@ -25,6 +25,7 @@ script:
   - python locator/test_h5_output.py locator_output_19-01-03T1500.h5 locator/data/tests/locator_output_ref.h5 -p 1e-5
 
   - coverage run main.py locator/data/locator_input_20190719.yaml locator/data/locator_output_20190719.yaml --plot
+  - ls
   #- cat locator/data/locator_input_20190719.yaml | ./locator.bash
   - python locator/test_h5_output.py locator_output_19-07-19T1333.h5 locator/data/tests/locator_output_ref_190719.h5 -p 1e-5
 
