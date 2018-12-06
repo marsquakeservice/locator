@@ -63,7 +63,7 @@ def main(input_file, output_file, plot_output=False):
     # Calculate probability
     p = calc_p(dep, dis, sigma, tt, input['tt_meas'], weights)
 
-    if False: # plot_output:
+    if plot_output:
         plot(p, dep=dep, dis=dis)
         plot_phases(tt, p, input['phase_list'],
                     input['freqs'], input['tt_meas'],

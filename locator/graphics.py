@@ -5,7 +5,7 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 
-def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None,
+def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None, xunit='', yunit='',
                            scatter=False, **kwargs):
     fig = plt.figure(**kwargs)
 
@@ -16,7 +16,7 @@ def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None,
     ax_2D = fig.add_axes([0.10, 0.10, 0.76, 0.72], label='2D')
     ax_x = fig.add_axes([0.10, 0.82, 0.76, 0.12], label='y_marginal', sharex=ax_2D)
     plt.axis('off')
-    ax_y = fig.add_axes([0.86, 0.10, 0.12, 0.72], label='x_marginal', sharey=ax_2D)
+    ax_y = fig.add_axes([0.86, 0.10, 0.11, 0.72], label='x_marginal', sharey=ax_2D)
     plt.axis('off')
     ax_cb = fig.add_axes([0.86, 0.84, 0.017, 0.15], label='colorbar')
 
@@ -41,8 +41,13 @@ def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None,
     # Calculate mean values and mark them
     mean_x = np.sum(marg_x * x / z_int)
     ax_x.axvline(x=mean_x, linestyle='dashed', color='black')
+    ax_x.text(x=mean_x, y=max(marg_x)*1.1, s='%4.1f %s' % (mean_x, xunit),
+              horizontalalignment='center')
     mean_y = np.sum(marg_y * y / z_int)
     ax_y.axhline(y=mean_y, linestyle='dashed', color='black')
+    ax_y.text(y=mean_y, x=max(marg_y) * 1.02, s='%4.1f %s' % (mean_y, yunit),
+              rotation=270.,
+              verticalalignment='center')
 
     ax_2D.set_xlabel(xlabel)
     ax_2D.set_ylabel(ylabel)
@@ -64,6 +69,8 @@ def plot(p, dis, dep):
     fig, axs = plot_2D_with_marginals(dis, dep, depthdist,
                                       xlabel='distance / degree',
                                       ylabel='depth / km',
+                                      xunit='degree',
+                                      yunit='km',
                                       figsize=(8,5))
     axs[0].set_ylim(150, 0)
     fig.savefig('depth_distance.png')
