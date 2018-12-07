@@ -5,11 +5,12 @@ matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 
 
-def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None, xunit='', yunit='',
+def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
+                           xlabel=None, ylabel=None, xunit='', yunit='',
                            scatter=False, **kwargs):
     fig = plt.figure(**kwargs)
 
-    levels = np.sqrt(np.max(z)) * np.asarray((0.0, 0.05, 0.2, 0.5, 0.75, 1.0))
+    levels = np.sqrt(np.max(z)) * np.asarray((0.05, 0.2, 0.5, 0.75, 1.0))
     z_int = np.sum(z, axis=None)
 
     # Central 2D plot
@@ -18,7 +19,7 @@ def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None, xunit='', yunit=''
     plt.axis('off')
     ax_y = fig.add_axes([0.86, 0.10, 0.11, 0.72], label='x_marginal', sharey=ax_2D)
     plt.axis('off')
-    ax_cb = fig.add_axes([0.86, 0.84, 0.017, 0.15], label='colorbar')
+    ax_cb = fig.add_axes([0.86, 0.84, 0.017, 0.12], label='colorbar')
 
     ax_x.get_xaxis().set_visible(False)
     ax_x.get_yaxis().set_visible(False)
@@ -26,7 +27,7 @@ def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None, xunit='', yunit=''
     marg_x = np.sum(z, axis=0)
     ax_x.plot(x, marg_x)
     marg_y = np.sum(z, axis=1)
-    ax_y.plot(marg_y, y)
+    l_p, = ax_y.plot(marg_y, y)
     if scatter:
         xx, yy = np.meshgrid(x, y)
         cf = ax_2D.scatter(xx, yy, c=np.sqrt(z), cmap='afmhot_r', marker='+')
@@ -45,9 +46,24 @@ def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None, xunit='', yunit=''
               horizontalalignment='center')
     mean_y = np.sum(marg_y * y / z_int)
     ax_y.axhline(y=mean_y, linestyle='dashed', color='black')
-    ax_y.text(y=mean_y, x=max(marg_y) * 1.02, s='%4.1f %s' % (mean_y, yunit),
+    ax_y.text(x=max(marg_y) * 1.02, y=mean_y, s='%4.1f %s' % (mean_y, yunit),
               rotation=270.,
               verticalalignment='center')
+
+    if x_aux is not None:
+        prior = x_aux / max(x_aux) * max(marg_x)
+        likelihood = marg_x / prior
+        likelihood *= max(marg_x) * max(likelihood)
+        l_p, = ax_x.plot(x, prior, 'k--')
+        l_l, = ax_x.plot(x, likelihood, 'r:')
+    if y_aux is not None:
+        prior = y_aux / max(y_aux) * max(marg_y)
+        likelihood = marg_y / prior
+        likelihood *= max(marg_y) / max(likelihood)
+        l_pi, = ax_y.plot(prior, y, 'k--', label='prior')
+        l_l, = ax_y.plot(likelihood, y, 'r:', label='likelihood')
+
+    ax_y.legend((l_p, l_l, l_pi), ('posterior', 'likelihood', 'prior'), loc=(0, -0.1))
 
     ax_2D.set_xlabel(xlabel)
     ax_2D.set_ylabel(ylabel)
@@ -60,18 +76,20 @@ def plot_2D_with_marginals(x, y, z, xlabel=None, ylabel=None, xunit='', yunit=''
     return fig, [ax_2D, ax_x, ax_y]
 
 
-def plot(p, dis, dep):
+def plot(p, dis, dep, depth_prior=None, distance_prior=None):
     nmodel, ndepth, ndist = p.shape
 
     # Depth-distance matrix
     depthdist = np.sum(p, axis=(0)) / nmodel
 
     fig, axs = plot_2D_with_marginals(dis, dep, depthdist,
+                                      x_aux=distance_prior,
+                                      y_aux=depth_prior,
                                       xlabel='distance / degree',
                                       ylabel='depth / km',
                                       xunit='degree',
                                       yunit='km',
-                                      figsize=(8,5))
+                                      figsize=(12,7.5))
     axs[0].set_ylim(150, 0)
     fig.savefig('depth_distance.png')
     plt.close('all')

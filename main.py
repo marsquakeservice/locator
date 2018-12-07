@@ -13,6 +13,7 @@ __license__ = "none"
 
 from argparse import ArgumentParser
 import os
+import numpy as np
 
 
 def define_arguments():
@@ -28,17 +29,22 @@ def define_arguments():
     # helptext = "Path to model list file"
     # parser.add_argument('model_path', help=helptext)
 
-    # helptext = "Path to model weight file"
-    # parser.add_argument('weight_path', help=helptext)
-
     helptext = "Create plots"
     parser.add_argument('--plot', help=helptext,
+                        default=False, action='store_true')
+
+    helptext = "A priori 1/e depth"
+    parser.add_argument('-d', '--max_depth', help=helptext,
+                        type=float, default=100.)
+
+    helptext = "Use distance prior information based on area"
+    parser.add_argument('--dist_prior', help=helptext,
                         default=False, action='store_true')
 
     return parser.parse_args()
 
 
-def main(input_file, output_file, plot_output=False):
+def main(input_file, output_file, plot_output, max_depth, use_distance_prior):
     # model_name, phase_list, tt_meas, sigma_pick, freqs, backazimuth, t_ref, sigma_model = read_input(input_file)
     input = read_input(input_file)
 
@@ -60,11 +66,22 @@ def main(input_file, output_file, plot_output=False):
     # Total sigma is sigma of modelled travel time plus picking uncertainty
     sigma = input['sigma_model'] + input['sigma']
 
+    # depth prior
+    depth_prior = np.exp(-(dep/max_depth)**2)
+
+    # distance prior
+    if use_distance_prior:
+        distance_prior = np.sin(np.deg2rad(dis))
+    else:
+        distance_prior = None
+
     # Calculate probability
-    p = calc_p(dep, dis, sigma, tt, input['tt_meas'], weights)
+    p = calc_p(dep, dis, sigma, tt, input['tt_meas'], weights,
+               depth_prior=depth_prior, distance_prior=distance_prior)
 
     if plot_output:
-        plot(p, dep=dep, dis=dis)
+        plot(p, dep=dep, dis=dis, depth_prior=depth_prior,
+             distance_prior=distance_prior)
         plot_phases(tt, p, input['phase_list'],
                     input['freqs'], input['tt_meas'],
                     input['sigma'])
@@ -85,4 +102,6 @@ if __name__ == '__main__':
     args = define_arguments()
     main(input_file=args.input_file,
          output_file=args.output_file,
-         plot_output=args.plot)
+         plot_output=args.plot,
+         max_depth=args.max_depth,
+         use_distance_prior=args.dist_prior)

@@ -1,7 +1,8 @@
 import numpy as np
 
 
-def calc_p(dep, dis, sigma, tt, tt_meas, weights):
+def calc_p(dep, dis, sigma, tt, tt_meas, weights, depth_prior=None,
+           distance_prior=None):
     misfit = ((tt - tt_meas) / sigma) ** 2
     nmodel, ndepth, ndist, nphase = tt.shape
 
@@ -14,6 +15,14 @@ def calc_p(dep, dis, sigma, tt, tt_meas, weights):
     # deldep = calc_del(dep)
     # p *= deldis.reshape((1, 1, ndist))
     # p *= deldep.reshape((1, ndepth, 1))
+
+    # Multiply probability with depth prior
+    if depth_prior is not None:
+        p *= depth_prior.reshape((1, ndepth, 1))
+
+    # Multiply probability with distance prior
+    if distance_prior is not None:
+        p *= distance_prior.reshape((1, 1, ndist))
 
     # Multiply probability with a priori weights of models
     p *= weights.reshape((nmodel, 1, 1))
