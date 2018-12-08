@@ -61,7 +61,8 @@ def main(input_file, output_file, plot_output, max_depth, use_distance_prior):
                                  tt_path=tt_path,
                                  phase_list=input['phase_list'],
                                  freqs=input['freqs'],
-                                 backazimuth=input['backazimuth'])
+                                 backazimuth=input['backazimuth'],
+                                 idx_ref=input['idx_ref'])
 
     # Total sigma is sigma of modelled travel time plus picking uncertainty
     sigma = input['sigma_model'] + input['sigma']
