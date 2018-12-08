@@ -1,10 +1,10 @@
-[![Build Status](https://travis-ci.org/sstaehler/locator.svg?branch=master)](https://travis-ci.org/sstaehler/locator)
---
+[![Build Status](https://travis-ci.org/marsquakeservice/locator.svg?branch=master)](https://travis-ci.org/marsquakeservice/locator)
+
 Locator
 --
 Tries to locate earthquakes based on picked arrival times and a set of velocity models in MQS-format. 
 
-- 
+
 Testing:
 -
 The package contains a script to create test files, based on picked surface
