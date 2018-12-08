@@ -15,8 +15,8 @@ export SINGLESTATION=./locator/data/models/
 
 # 8 model files are included in this repository.
 # To download more, use 
-wget -q https://polybox.ethz.ch/index.php/s/ibufo2dYhyUfu6j/download -O /tmp/250models.tar.bz2
-tar -xf /tmp/250models.tar.bz2 -C locator/data/models/data/bodywave/
+wget -q https://polybox.ethz.ch/index.php/s/mtF15vrUY53XCcj/download -O /tmp/105models.tar.bz2
+tar -xf /tmp/105models.tar.bz2 -C locator/data/models/data/bodywave/
 
 # Create a test file with travel times
 # First argument selects event, second selects event depth

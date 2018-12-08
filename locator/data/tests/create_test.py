@@ -20,7 +20,7 @@ args = parser.parse_args()
 
 def create_input(phases, baz):
     with open('locator_input.yml', 'w') as f:
-        f.write('velocity_model:             MQSORT\n')
+        f.write('velocity_model:             MQS_Ops\n')
         f.write('velocity_model_uncertainty: 1.5\n')
         f.write('backazimuth:\n')
         f.write('    value: %5.1f\n' % baz)
