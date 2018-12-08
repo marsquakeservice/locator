@@ -80,6 +80,12 @@ def main(input_file, output_file, plot_output, max_depth, use_distance_prior):
     p = calc_p(dep, dis, sigma, tt, input['tt_meas'], weights,
                depth_prior=depth_prior, distance_prior=distance_prior)
 
+    if np.max(p, axis=None) < 1E-30:
+        raise ValueError('Travel times are incompatible \n' +
+                         '  highest p: %8.2e\n' % np.max(p, axis=None) +
+                         '  threshold: %8.2e\n ' % 1e-30)
+
+
     if plot_output:
         plot(p, dep=dep, dis=dis, depth_prior=depth_prior,
              distance_prior=distance_prior)

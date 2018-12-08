@@ -39,13 +39,13 @@ def load_H5(fnam):
     return p, model_name, depths, distances, phase_list, t_ref, baz
 
 
-def plot_cwf(tr, ax, t_ref=0, fmin=1./50, fmax=1./2):
+def plot_cwf(tr, ax, t_ref=0, fmin=1./50, fmax=1./2, w0=6):
     from obspy.signal.tf_misfit import cwt
     npts = tr.stats.npts
     dt = tr.stats.delta
     t = np.linspace(0, dt * npts, npts)
 
-    scalogram = abs(cwt(tr.data, dt, w0=6,
+    scalogram = abs(cwt(tr.data, dt, w0=w0,
                         fmin=fmin, fmax=fmax, nf=100))
 
     x, y = np.meshgrid(t + t_ref,
@@ -111,7 +111,7 @@ def main(args):
         y, x = np.histogram(tt[:, :, :, iphase].flatten(), weights=p.flatten(),
                             bins=np.arange(-t_pre, t_post, 2),
                             density=False)
-        ax[3].plot(x[1:], y / np.max(np.sqrt(y)), label=phase)
+        ax[3].plot(x[1:], y / np.max((y)), label=phase)
     ax[3].set_ylim(0, 1)
     ax[3].legend(ncol=2)
     for i in range(0, 3):
@@ -120,9 +120,10 @@ def main(args):
         ax[i].grid(axis='x')
         ax[i].set_ylabel('period / seconds')
 
-
-    tt_r_res = tt_r[:,:,:,1:].reshape((-1, nfreq))
-    tt_g_res = tt_g[:,:,:,1:].reshape((-1, nfreq))
+    # p_dist = np.sum(p, axis=1)
+    tt_r_res = tt_r[:, :, :, 1:].reshape((-1, nfreq))
+    tt_g_res = tt_g[:, :, :, 1:].reshape((-1, nfreq))
+    #p_flat = p.reshape(tt_g_res.shape[0])
     p_flat = p.reshape(tt_g_res.shape[0])
     p_flat /= p_flat.max()
     bol = p_flat > 0.1
@@ -155,6 +156,19 @@ def main(args):
         a.set_ylim(-1e-8, 1e-8)
     fig.savefig('phase_prediction_seis.png', dpi=200)
     plt.close()
+
+
+    fig_sw, ax_sw = plt.subplots(nrows=2, ncols=1, figsize=(5,10), sharex='col')
+    tt_r_red = np.array(tt_r_res[bol, :])
+    st.trim(st[0].stats.starttime + np.min(tt_r_red),
+            st[0].stats.starttime + np.max(tt_r_red))
+    plot_cwf(st[0], ax_sw[0], t_ref=-t_pre,
+             fmax=1, fmin=fmin, w0=10)
+    plot_cwf(st[2], ax_sw[1], t_ref=-t_pre,
+             fmax=1, fmin=fmin, w0=10)
+    ax[i].grid(axis='x')
+    ax[i].set_ylabel('period / seconds')
+    plt.show()
 
 
 def read_waveform(waveform_dir, t_ref, stat, net, baz,
