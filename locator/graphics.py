@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 from os.path import join as pjoin
 import matplotlib
