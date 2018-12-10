@@ -83,7 +83,7 @@ def main(args):
                        '%s.models' % H5['model_name'])
     weight_path = pjoin(tt_path,
                         '%s.weights' % H5['model_name'])
-    files, weights = read_model_list(model_path, weight_path)
+    files, weights, model_names, all_weights  = read_model_list(model_path, weight_path)
 
     # Load body waves
     tt = load_tt(files=files, 
