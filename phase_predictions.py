@@ -30,7 +30,7 @@ def define_arguments():
 def load_H5(fnam):
     with File(fnam, 'r') as f:
         H5 = {
-            'model_name': f['model_name'].value,
+            'model_name': f['modelset_name'].value,
             'p': f['p'].value,
             'depths': f['depths'].value,
             'distances': f['distances'].value,
@@ -43,13 +43,13 @@ def load_H5(fnam):
     return H5 #p, model_name, depths, distances, phase_list, freqs, t_ref, baz
 
 
-def plot_cwf(tr, ax, t_ref=0, fmin=1./50, fmax=1./2):
+def plot_cwf(tr, ax, t_ref=0, fmin=1./50, fmax=1./2, w0=6):
     from obspy.signal.tf_misfit import cwt
     npts = tr.stats.npts
     dt = tr.stats.delta
     t = np.linspace(0, dt * npts, npts)
 
-    scalogram = abs(cwt(tr.data, dt, w0=6,
+    scalogram = abs(cwt(tr.data, dt, w0=w0,
                         fmin=fmin, fmax=fmax, nf=100))
 
     x, y = np.meshgrid(t + t_ref,
@@ -90,7 +90,8 @@ def main(args):
                  tt_path=tt_path, 
                  phase_list=phase_list_prediction,
                  freqs=H5['freqs'],
-                 backazimuth=H5['baz'])[0]
+                 backazimuth=H5['baz'],
+                 idx_ref=0)[0]
 
     nfreq = 21
     p0 = 5
@@ -103,14 +104,16 @@ def main(args):
     tt_r = load_tt(files=files, tt_path=tt_path, 
                    phase_list=phase_list,
                    freqs=freqs_sw,
-                   backazimuth=H5['baz'])[0]
+                   backazimuth=H5['baz'],
+                   idx_ref=0)[0]
     phase_list = ['P']
     for i in range(nfreq):
         phase_list.append('G1')
     tt_g = load_tt(files=files, tt_path=tt_path, 
                    phase_list=phase_list,
                    freqs=freqs_sw,
-                   backazimuth=H5['baz'])[0]
+                   backazimuth=H5['baz'],
+                   idx_ref=0)[0]
     st = read_waveform(waveform_dir, t0, stat=stat_station, net=stat_net, baz=H5['baz'])
 
 
@@ -129,25 +132,24 @@ def main(args):
         ax[i].grid(axis='x')
         ax[i].set_ylabel('period / seconds')
 
-
-    tt_r_res = tt_r[:,:,:,1:].reshape((-1, nfreq))
-    tt_g_res = tt_g[:,:,:,1:].reshape((-1, nfreq))
+    tt_r_res = tt_r[:, :, :, 1:].reshape((-1, nfreq))
+    tt_g_res = tt_g[:, :, :, 1:].reshape((-1, nfreq))
     p_flat = H5['p'].reshape(tt_g_res.shape[0])
     p_flat /= p_flat.max()
     bol = p_flat > 0.1
     ax[0].plot(tt_r_res[bol, :].T, #  - t_pre, 
                1./np.array(freqs_sw[1:]),
-               zorder=100, color='k', alpha=0.05)
+               zorder=100, color='k', alpha=1./np.sqrt(sum(bol)))
     ax[2].plot(tt_g_res[bol, :].T, # - t_pre, 
                1./np.array(freqs_sw[1:]),
-               zorder=100, color='k', alpha=0.05)
+               zorder=100, color='k', alpha=1./np.sqrt(sum(bol)))
     
     ax[0].plot(H5['tt_meas'][H5['phase_list']=='R1'], 
                H5['periods'][H5['phase_list']=='R1'], 'ko',
-               zorder=120)
+               zorder=999)
     ax[2].plot(H5['tt_meas'][H5['phase_list']=='G1'], 
                H5['periods'][H5['phase_list']=='G1'], 'ko',
-               zorder=120)
+               zorder=999)
 
     ax[3].set_xlim(-t_pre, t_post)
     ax[3].set_xlabel('time after P / seconds')
@@ -155,7 +157,7 @@ def main(args):
         a.set_ylim(0, 1./fmin)
     plt.tight_layout()
     fig.savefig('phase_prediction_spec_long.png', dpi=200)
-    ax[3].set_xlim(-t_pre, 1200)
+    ax[3].set_xlim(-t_pre, 1500)
     fig.savefig('phase_prediction_spec.png', dpi=200)
 
 
@@ -167,11 +169,24 @@ def main(args):
         ax[i].grid(axis='x')
     ax[3].set_xlim(-t_pre, t_post)
     fig.savefig('phase_prediction_seis_long.png', dpi=200)
-    ax[3].set_xlim(-t_pre, 1200)
+    ax[3].set_xlim(-t_pre, 1500)
     for a in ax[0:3]:
         a.set_ylim(-1e-8, 1e-8)
     fig.savefig('phase_prediction_seis.png', dpi=200)
     plt.close()
+
+
+    fig_sw, ax_sw = plt.subplots(nrows=2, ncols=1, figsize=(5,10), sharex='col')
+    tt_r_red = np.array(tt_r_res[bol, :])
+    st.trim(st[0].stats.starttime + np.min(tt_r_red),
+            st[0].stats.starttime + np.max(tt_r_red))
+    plot_cwf(st[0], ax_sw[0], t_ref=-t_pre,
+             fmax=1, fmin=fmin, w0=10)
+    plot_cwf(st[2], ax_sw[1], t_ref=-t_pre,
+             fmax=1, fmin=fmin, w0=10)
+    ax[i].grid(axis='x')
+    ax[i].set_ylabel('period / seconds')
+    plt.show()
 
 
 def read_waveform(waveform_dir, t_ref, stat, net, baz,

@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 import numpy as np
 from h5py import File
 from obspy import UTCDateTime
 from scipy.interpolate import interp2d
 from yaml import load
 from os.path import join as pjoin
-import sys
 
 _type = dict(R1 = 'rayleigh',
              G1 = 'love')
@@ -25,7 +25,7 @@ def read_model_list(fnam_models, fnam_weights, weight_lim=1e-5):
     return fnams[weights>weight_lim], weights[weights>weight_lim], modelnames, weights
 
 
-def load_tt(files, tt_path, phase_list, freqs, backazimuth):
+def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
 
     # Get dimension of TT variable (i.e. number of depths and distances)
     with File(pjoin(tt_path, 'tt', files[0])) as f:
@@ -43,10 +43,10 @@ def load_tt(files, tt_path, phase_list, freqs, backazimuth):
             _read_surface_waves(f, ifile=ifile, phase_list=phase_list,
                                 freqs=freqs, distances=distances, tt=tt,
                                 backazimuth=backazimuth)
-    try:
-        idx_ref = phase_list.index('P')
-    except ValueError:
-        idx_ref = phase_list.index('P1')
+    # try:
+    #     idx_ref = phase_list.index('P')
+    # except ValueError:
+    #     idx_ref = phase_list.index('P1')
 
     tt_P = np.zeros((len(files), ndepth, ndist, 1), dtype='float32')
     tt_P[:, :, :, 0] = tt[:, :, :, idx_ref]
@@ -90,7 +90,7 @@ def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt, backazimuth)
 def read_input(filename):
     with open(filename, 'r') as f:
         input_yml = load(f)
-        phase_list, tt_meas, sigma, freqs, tt_ref = \
+        phase_list, tt_meas, sigma, freqs, idx_ref, tt_ref = \
             serialize_phases(input_yml['phases'])
         try:
             backazimuth = input_yml['backazimuth']['value']
@@ -106,10 +106,11 @@ def read_input(filename):
              'sigma': sigma,
              'freqs': freqs,
              'backazimuth': backazimuth,
+             'idx_ref': idx_ref,
              'tt_ref': tt_ref,
              'sigma_model': sigma_model}
 
-    return input # model_name, phase_list, tt_meas, sigma, freqs, backazimuth, tt_ref, sigma_model
+    return input
 
 
 def serialize_phases(phases):
@@ -118,20 +119,20 @@ def serialize_phases(phases):
     tt_meas = np.zeros(len(phases))
     sigma = np.zeros_like(tt_meas)
     freqs = np.zeros_like(tt_meas)
-    iref = 0
+    iref = -1
     for iphase, phase in enumerate(phases):
         phase_list.append(phase['code'])
-        if phase['code'] in ['P', 'P1', 'PKP']:
-            iref = iphase
 
         tt_meas[iphase] = float(UTCDateTime(phase['datetime']))
         sigma[iphase] = (phase['uncertainty_upper'] + phase['uncertainty_lower']) * 0.5
-        try:
-            freqs[iphase] = phase['frequency']
-        except:
-            freqs[iphase] = 0
+        if phase['code'] in ['R1', 'G1']:
+            try:
+                freqs[iphase] = phase['frequency']
+            except KeyError:
+                raise ValueError('Surface wave phase %s has no frequency' % phase['code'])
+    iref = np.argmin(tt_meas)
 
     tt_ref = tt_meas[iref]
     tt_meas -= tt_ref
 
-    return phase_list, tt_meas, sigma, freqs, tt_ref
+    return phase_list, tt_meas, sigma, freqs, iref, tt_ref

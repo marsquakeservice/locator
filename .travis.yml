@@ -12,22 +12,18 @@ install:
   - sudo apt-get -qqy install hdf5-tools
   - pip install -qq -r requirements.txt
   - pip install coveralls
-  - wget -q https://polybox.ethz.ch/index.php/s/ibufo2dYhyUfu6j/download -O $HOME/250models.tar.bz2
-  - tar -xf $HOME/250models.tar.bz2 -C locator/data/models/data/bodywave/
+  - wget -q https://polybox.ethz.ch/index.php/s/mtF15vrUY53XCcj/download -O $HOME/105models.tar.bz2
+  - tar -xf $HOME/105models.tar.bz2 -C locator/data/models/data/bodywave/
   - ln -s sstaehler/locator $HOME/locator
 
 script:
-  # - ln -s sstaehler/locator $HOME/
-  # - ls -l $HOME/locator/
-  # - cat locator/data/locator_input.yaml | ./locator.bash
-
-  - coverage run main.py locator/data/locator_input.yaml locator/data/locator_output.yaml --plot
-  - python locator/test_h5_output.py locator_output_19-01-03T1500.h5 locator/data/tests/locator_output_ref.h5 -p 1e-5
-
-  - coverage run main.py locator/data/locator_input_20190719.yaml locator/data/locator_output_20190719.yaml --plot
+  # Create test file
+  - python ./locator/data/tests/create_test.py 41 70
+  - coverage run main.py locator_input.yml locator_test_41_70.yml --plot
+  - python locator/test_h5_output.py locator_output_18-12-31T2359.h5 locator/data/tests/MQS.h5
   - ls
   #- cat locator/data/locator_input_20190719.yaml | ./locator.bash
-  - python locator/test_h5_output.py locator_output_19-07-19T1333.h5 locator/data/tests/locator_output_ref_190719.h5 -p 1e-5
+  # - python locator/test_h5_output.py locator_output_19-07-19T1333.h5 locator/data/tests/locator_output_ref_190719.h5 -p 1e-5
 
 after_success:
   - cd $TRAVIS_BUILD_DIR; coveralls
