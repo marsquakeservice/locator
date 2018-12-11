@@ -14,7 +14,7 @@ from os import environ as env
 
 t_post = 10800
 t_pre = 50
-fmin = 1./75.
+fmin = 1./100.
 
 def define_arguments():
     helptext = 'Predict phase arrivals based on locator solution'
@@ -137,19 +137,22 @@ def main(args):
     p_flat = H5['p'].reshape(tt_g_res.shape[0])
     p_flat /= p_flat.max()
     bol = p_flat > 0.1
-    ax[0].plot(tt_r_res[bol, :].T, #  - t_pre, 
-               1./np.array(freqs_sw[1:]),
-               zorder=100, color='k', alpha=1./np.sqrt(sum(bol)))
+    l_pred = ax[0].plot(tt_r_res[bol, :].T, #  - t_pre, 
+                        1./np.array(freqs_sw[1:]),
+                        zorder=100, color='k', alpha=1./np.sqrt(sum(bol)))
     ax[2].plot(tt_g_res[bol, :].T, # - t_pre, 
                1./np.array(freqs_sw[1:]),
                zorder=100, color='k', alpha=1./np.sqrt(sum(bol)))
     
-    ax[0].plot(H5['tt_meas'][H5['phase_list']=='R1'], 
-               H5['periods'][H5['phase_list']=='R1'], 'ko',
-               zorder=999)
+    l_pick, = ax[0].plot(H5['tt_meas'][H5['phase_list']=='R1'], 
+		         H5['periods'][H5['phase_list']=='R1'], 'o', c='lime',
+		         zorder=9999)
     ax[2].plot(H5['tt_meas'][H5['phase_list']=='G1'], 
-               H5['periods'][H5['phase_list']=='G1'], 'ko',
-               zorder=999)
+               H5['periods'][H5['phase_list']=='G1'], 'o', c='lime',
+               zorder=9999)
+    
+    ax[1].legend((l_pick, l_pred[0]), ('picked SW times', 'pred. disp. curve'),
+                 loc=4)
 
     ax[3].set_xlim(-t_pre, t_post)
     ax[3].set_xlabel('time after P / seconds')
@@ -157,7 +160,7 @@ def main(args):
         a.set_ylim(0, 1./fmin)
     plt.tight_layout()
     fig.savefig('phase_prediction_spec_long.png', dpi=200)
-    ax[3].set_xlim(-t_pre, 1500)
+    ax[3].set_xlim(-t_pre, max(H5['tt_meas']*1.2))
     fig.savefig('phase_prediction_spec.png', dpi=200)
 
 
@@ -165,14 +168,22 @@ def main(args):
     st.filter('highpass', freq=fmin, zerophase=True)
     for i in range(0, 3):
         ax[i].clear()
-        ax[i].plot(st[i].times() - t_pre, st[i].data)
+        ax[i].plot(st[i].times() - t_pre, st[i].data, c='darkgrey', lw=0.8)
         ax[i].grid(axis='x')
+        for iphase, phase in enumerate(H5['phase_list']):
+            if phase not in ['R1', 'G1']:
+                ax[i].axvline(x=H5['tt_meas'][iphase], ls='--', c='r')
+                
     ax[3].set_xlim(-t_pre, t_post)
-    fig.savefig('phase_prediction_seis_long.png', dpi=200)
-    ax[3].set_xlim(-t_pre, 1500)
+    fig.savefig('phase_prediction_seis_long.png', dpi=400)
+    ax[3].set_xlim(-t_pre, max(H5['tt_meas']*1.2))
     for a in ax[0:3]:
-        a.set_ylim(-1e-8, 1e-8)
-    fig.savefig('phase_prediction_seis.png', dpi=200)
+        a.set_ylim(-1e-7, 1e-7)
+    fig.savefig('phase_prediction_seis.png', dpi=400)
+    ax[3].set_xlim(-t_pre, 250)
+    for a in ax[0:3]:
+        a.set_ylim(-1e-7, 1e-7)
+    fig.savefig('phase_prediction_seis_short.png', dpi=400)
     plt.close()
 
 
