@@ -25,9 +25,11 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
     ax_x.get_xaxis().set_visible(False)
     ax_x.get_yaxis().set_visible(False)
 
-    marg_x = np.sum(z, axis=0)
+    marg_x = np.nansum(z, axis=0)
+    marg_x /= np.nanmax(marg_x)
     ax_x.plot(x, marg_x)
-    marg_y = np.sum(z, axis=1)
+    marg_y = np.nansum(z, axis=1)
+    marg_y /= np.nanmax(marg_y)
     l_p, = ax_y.plot(marg_y, y)
     if scatter:
         xx, yy = np.meshgrid(x, y)
@@ -36,9 +38,9 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
         cf = ax_2D.contourf(x, y, np.sqrt(z), cmap='afmhot_r', levels=levels)
 
     ax_x.set_xlim(x[0], x[-1])
-    ax_x.set_ylim(0, max(marg_x))
+    ax_x.set_ylim(0, 1)
     ax_y.set_ylim(y[0], y[-1])
-    ax_y.set_xlim(0, max(marg_y))
+    ax_y.set_xlim(0, 1)
 
     # Calculate mean values and mark them
     mean_x = np.sum(marg_x * x / z_int)
@@ -92,7 +94,7 @@ def plot(p, dis, dep, depth_prior=None, distance_prior=None):
                                       yunit='km',
                                       figsize=(12,7.5))
     axs[0].set_ylim(150, 0)
-    fig.savefig('depth_distance.png')
+    fig.savefig('depth_distance.png', dpi=200)
     plt.close('all')
 
 
@@ -120,9 +122,9 @@ def plot_models(p, files, tt_path):
                 ls,  = a.plot(f['mantle/vs'], radius,c='lightgrey',
                               alpha=0.4, zorder=2)
                 lp,  = a.plot(f['mantle/vp'], radius, c='darkblue',
-                              alpha=model_p**4, zorder=20)
+                              alpha=model_p**2, zorder=20)
                 ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
-                              alpha=model_p**4, zorder=20)
+                              alpha=model_p**2, zorder=20)
     ax[0].set_ylim(2200, 0)
     ax[1].set_ylim(220, 0)
     ax[1].legend((lp, ls), ('vp', 'vs'))
@@ -130,7 +132,7 @@ def plot_models(p, files, tt_path):
         a.set_xlabel('velocity / m/s')
         a.set_ylabel('depth / km')
 
-    plt.savefig('velocity_models.png')
+    plt.savefig('velocity_models.png', dpi=200)
 
 
 def plot_phases(tt, p, phase_list, freqs, tt_meas, sigma):
