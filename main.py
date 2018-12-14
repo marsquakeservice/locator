@@ -38,6 +38,10 @@ def define_arguments():
     parser.add_argument('--plot', help=helptext,
                         default=False, action='store_true')
 
+    helptext = "Create model decimation output"
+    parser.add_argument('--model_output', help=helptext,
+                        default=False, action='store_true')
+
     helptext = "A priori 1/e depth"
     parser.add_argument('-d', '--max_depth', help=helptext,
                         type=float, default=100.)
@@ -49,7 +53,8 @@ def define_arguments():
     return parser.parse_args()
 
 
-def main(input_file, output_file, model_path, weight_path, plot_output, max_depth, use_distance_prior):
+def main(input_file, output_file, model_path, weight_path, plot_output,
+         model_output, max_depth, use_distance_prior):
     input = read_input(input_file)
 
     tt_path = os.path.join(os.environ['SINGLESTATION'], 
@@ -100,6 +105,7 @@ def main(input_file, output_file, model_path, weight_path, plot_output, max_dept
                     input['sigma'])
         plot_models(p, files, tt_path)
     write_result(file_out=output_file,
+                 model_output=model_output,
                  modelset_name=input['model_name'],
                  p=p, dep=dep, dis=dis,
                  phase_list=input['phase_list'],
@@ -118,5 +124,6 @@ if __name__ == '__main__':
          model_path=args.model_path,
          weight_path=args.weight_path,
          plot_output=args.plot,
+         model_output=args.model_output,
          max_depth=args.max_depth,
          use_distance_prior=args.dist_prior)

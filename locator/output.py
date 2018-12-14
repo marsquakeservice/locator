@@ -26,7 +26,7 @@ def calc_origin_time(p, t_ref, tt_P):
     return origin_pdf, origin_time_sum, time_bin_mid
 
 
-def write_result(file_out, modelset_name,
+def write_result(file_out, model_output, modelset_name,
                  p, dep, dis, phase_list, tt_meas, freqs,
                  tt_P, t_ref, baz,
                  weights, model_names,
@@ -80,7 +80,10 @@ def write_result(file_out, modelset_name,
                       origin_time_sum=origin_time_sum,
                       system_configuration=uname_string)
 
-    _write_model_misfits(p, origin_time_sum)
+    if model_output:
+        _write_model_misfits(p, origin_time_sum)
+        _write_weight_file(p, model_names=model_names,
+                           origin_time_sum=origin_time_sum)
 
     _write_h5_output(p, modelset_name=modelset_name,
                      depths=dep, distances=dis,
@@ -148,6 +151,16 @@ def _write_single(f, **kwargs):
             f.write('%s: %s\n\n' % (key, value))
 
 
+def _write_weight_file(p, model_names, origin_time_sum):
+    fnam = 'model_weights_%s.txt' % \
+           (origin_time_sum.strftime(format='%y-%m-%dT%H%M'))
+    p_model = np.sum(p, axis=(1, 2))
+    model_weights = p_model / np.max(p_model)
+    with open(fnam, 'w') as fid:
+        for model_name, model_weight in zip(model_names, model_weights):
+            fid.write('%s %5.2f\n' % (model_name, model_weight))
+
+
 def _write_model_misfits(p, origin_time_sum):
     """
     Write probability for each model
@@ -159,6 +172,12 @@ def _write_model_misfits(p, origin_time_sum):
     with open(fnam, 'w') as f:
         for imodel, model in enumerate(p_model):
             f.write('%5d, %8.3e\n' % (imodel, model))
+            # if model > 0.5:
+            #     np.savetxt('model_%03d.txt' % imodel,
+            #                np.asarray([f['mantle/radius'], f['mantle/vp'],
+            #                            f['mantle/vs'], f['mantle/rho']]).T,
+            #                fmt = '%9.2e, %9.2e, %9.2e, %9.2e', header = 'vp, vs, rho')
+
 
 def _write_h5_output(p, modelset_name, depths, distances,
                      phase_list, tt_meas, t_ref, baz,
