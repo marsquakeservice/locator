@@ -1,0 +1,67 @@
+velocity_model: MQSORT
+velocity_model_uncertainty: 1.5
+phases:
+ -
+    code: P
+    datetime:   2019-01-03T15:09:54.55188Z
+    uncertainty_lower:  1.0
+    uncertainty_upper:  1.0
+ -
+    code: S
+    datetime:   2019-01-03T15:18:33.09501Z
+    uncertainty_lower: 10.0
+    uncertainty_upper: 10.0
+ -
+    code: R1
+    datetime:  2019-01-03T15:33:59.406395Z
+    frequency: 0.084090
+    uncertainty_lower: 65.0
+    uncertainty_upper: 65.0
+ -
+    code: pP
+    datetime:  2019-01-03T15:10:08.950989Z
+    uncertainty_lower:  1.0
+    uncertainty_upper:  1.0
+ -
+    code: R1
+    datetime:  2019-01-03T15:33:17.744603Z
+    frequency: 0.070711
+    uncertainty_lower: 45.0
+    uncertainty_upper: 45.0
+ -
+    code: R1
+    datetime:  2019-01-03T15:32:50.664439Z
+    frequency: 0.059460
+    uncertainty_lower: 43.0
+    uncertainty_upper: 43.0
+ -
+    code: R1
+    datetime:  2019-01-03T15:32:48.581349Z
+    frequency: 0.050000
+    uncertainty_lower: 42.0
+    uncertainty_upper: 42.0
+ -
+    code: R1
+    datetime:  2019-01-03T15:33:13.578424Z
+    frequency: 0.042045
+    uncertainty_lower: 60.0
+    uncertainty_upper: 60.0
+ -
+    code: R1
+    datetime:  2019-01-03T15:33:53.157126Z
+    frequency: 0.035355
+    uncertainty_lower: 65.0
+    uncertainty_upper: 65.0
+ -
+    code: R1
+    datetime:  2019-01-03T15:34:09.821842Z
+    frequency: 0.029730
+    uncertainty_lower: 55.0
+    uncertainty_upper: 55.0
+ -
+    code: R1
+    datetime:  2019-01-03T15:34:01.489484Z
+    frequency: 0.025000
+    uncertainty_lower: 84.0
+    uncertainty_upper: 84.0
+
