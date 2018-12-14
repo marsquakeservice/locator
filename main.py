@@ -31,7 +31,7 @@ def define_arguments():
                         default=None)
 
     helptext = "Path to model weight file"
-    parser.add_argument('--model_weights', help=helptext,
+    parser.add_argument('--weight_path', help=helptext,
                         default=None)
 
     helptext = "Create plots"
@@ -50,7 +50,6 @@ def define_arguments():
 
 
 def main(input_file, output_file, model_path, weight_path, plot_output, max_depth, use_distance_prior):
-    # model_name, phase_list, tt_meas, sigma_pick, freqs, backazimuth, t_ref, sigma_model = read_input(input_file)
     input = read_input(input_file)
 
     tt_path = os.path.join(os.environ['SINGLESTATION'], 
