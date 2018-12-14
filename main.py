@@ -61,7 +61,7 @@ def main(input_file, output_file, plot_output, max_depth, use_distance_prior):
                                  tt_path=tt_path,
                                  phase_list=input['phase_list'],
                                  freqs=input['freqs'],
-                                 backazimuth=input['backazimuth'],
+                                 backazimuth=(180 - input['backazimuth']) % 360,
                                  idx_ref=input['idx_ref'])
 
     # Total sigma is sigma of modelled travel time plus picking uncertainty
@@ -85,14 +85,6 @@ def main(input_file, output_file, plot_output, max_depth, use_distance_prior):
                          '  highest p: %8.2e\n' % np.max(p, axis=None) +
                          '  threshold: %8.2e\n ' % 1e-30)
 
-
-    if plot_output:
-        plot(p, dep=dep, dis=dis, depth_prior=depth_prior,
-             distance_prior=distance_prior)
-        plot_phases(tt, p, input['phase_list'],
-                    input['freqs'], input['tt_meas'],
-                    input['sigma'])
-        plot_models(p, files, tt_path)
     write_result(file_out=output_file,
                  modelset_name=input['model_name'],
                  p=p, dep=dep, dis=dis,
@@ -104,6 +96,14 @@ def main(input_file, output_file, plot_output, max_depth, use_distance_prior):
                  weights=weights,
                  model_names=models)
 
+
+    if plot_output:
+        plot_models(p, files, tt_path)
+        plot_phases(tt, p, input['phase_list'],
+                    input['freqs'], input['tt_meas'],
+                    input['sigma'])
+        plot(p, dep=dep, dis=dis, depth_prior=depth_prior,
+             distance_prior=distance_prior)
 
 if __name__ == '__main__':
     args = define_arguments()
