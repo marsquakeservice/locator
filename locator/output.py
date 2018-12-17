@@ -83,6 +83,7 @@ def write_result(file_out, model_output, modelset_name,
     if model_output:
         _write_model_misfits(p, origin_time_sum)
         _write_weight_file(p, model_names=model_names,
+                           prior_weights=weights,
                            origin_time_sum=origin_time_sum)
 
     _write_h5_output(p, modelset_name=modelset_name,
@@ -151,14 +152,20 @@ def _write_single(f, **kwargs):
             f.write('%s: %s\n\n' % (key, value))
 
 
-def _write_weight_file(p, model_names, origin_time_sum):
+def _write_weight_file(p, model_names, prior_weights, origin_time_sum, weight_lim=1e-5):
     fnam = 'model_weights_%s.txt' % \
            (origin_time_sum.strftime(format='%y-%m-%dT%H%M'))
     p_model = np.sum(p, axis=(1, 2))
     model_weights = p_model / np.max(p_model)
     with open(fnam, 'w') as fid:
-        for model_name, model_weight in zip(model_names, model_weights):
-            fid.write('%s %5.2f\n' % (model_name, model_weight))
+        imodel = 0
+        for model_name, prior_weight in zip(model_names, prior_weights):
+            if prior_weight > weight_lim:
+                weight = model_weights[imodel] * prior_weight
+                fid.write('%s %5.2f\n' % (model_name, weight))
+                imodel += 1
+            else:
+                fid.write('%s %5.2f\n' % (model_name, prior_weight))
 
 
 def _write_model_misfits(p, origin_time_sum):

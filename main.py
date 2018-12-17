@@ -66,7 +66,7 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
     if not weight_path:
         weight_path=os.path.join(tt_path,
                                  '%s.weights' % input['model_name'])
-    files, weights, models, prior_weights = read_model_list(model_path, weight_path)
+    files, weights, models_all, weights_all = read_model_list(model_path, weight_path)
 
     tt, dep, dis, tt_P = load_tt(files=files,
                                  tt_path=tt_path,
@@ -113,8 +113,8 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                  tt_meas=input['tt_meas'],
                  baz=input['backazimuth'],
                  tt_P=tt_P, t_ref=input['tt_ref'],
-                 weights=weights,
-                 model_names=models)
+                 weights=weights_all,
+                 model_names=models_all)
 
 
 if __name__ == '__main__':
