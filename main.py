@@ -26,11 +26,20 @@ def define_arguments():
     helptext = "Output YAML file"
     parser.add_argument('output_file', help=helptext)
 
-    # helptext = "Path to model list file"
-    # parser.add_argument('model_path', help=helptext)
+    helptext = "Path to model list file"
+    parser.add_argument('--model_path', help=helptext,
+                        default=None)
+
+    helptext = "Path to model weight file"
+    parser.add_argument('--weight_path', help=helptext,
+                        default=None)
 
     helptext = "Create plots"
     parser.add_argument('--plot', help=helptext,
+                        default=False, action='store_true')
+
+    helptext = "Create model decimation output"
+    parser.add_argument('--model_output', help=helptext,
                         default=False, action='store_true')
 
     helptext = "A priori 1/e depth"
@@ -44,18 +53,20 @@ def define_arguments():
     return parser.parse_args()
 
 
-def main(input_file, output_file, plot_output, max_depth, use_distance_prior):
-    # model_name, phase_list, tt_meas, sigma_pick, freqs, backazimuth, t_ref, sigma_model = read_input(input_file)
+def main(input_file, output_file, model_path, weight_path, plot_output,
+         model_output, max_depth, use_distance_prior):
     input = read_input(input_file)
 
     tt_path = os.path.join(os.environ['SINGLESTATION'], 
                            'data', 'bodywave',
                            input['model_name'])
-    model_path=os.path.join(tt_path, 
-                            '%s.models' % input['model_name'])
-    weight_path=os.path.join(tt_path,
-                             '%s.weights' % input['model_name'])
-    files, weights, models, prior_weights = read_model_list(model_path, weight_path)
+    if not model_path:
+        model_path=os.path.join(tt_path,
+                                '%s.models' % input['model_name'])
+    if not weight_path:
+        weight_path=os.path.join(tt_path,
+                                 '%s.weights' % input['model_name'])
+    files, weights, models_all, weights_all = read_model_list(model_path, weight_path)
 
     tt, dep, dis, tt_P = load_tt(files=files,
                                  tt_path=tt_path,
@@ -94,6 +105,7 @@ def main(input_file, output_file, plot_output, max_depth, use_distance_prior):
                     input['sigma'])
         plot_models(p, files, tt_path)
     write_result(file_out=output_file,
+                 model_output=model_output,
                  modelset_name=input['model_name'],
                  p=p, dep=dep, dis=dis,
                  phase_list=input['phase_list'],
@@ -101,14 +113,17 @@ def main(input_file, output_file, plot_output, max_depth, use_distance_prior):
                  tt_meas=input['tt_meas'],
                  baz=input['backazimuth'],
                  tt_P=tt_P, t_ref=input['tt_ref'],
-                 weights=weights,
-                 model_names=models)
+                 weights=weights_all,
+                 model_names=models_all)
 
 
 if __name__ == '__main__':
     args = define_arguments()
     main(input_file=args.input_file,
          output_file=args.output_file,
+         model_path=args.model_path,
+         weight_path=args.weight_path,
          plot_output=args.plot,
+         model_output=args.model_output,
          max_depth=args.max_depth,
          use_distance_prior=args.dist_prior)
