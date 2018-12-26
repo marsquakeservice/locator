@@ -12,7 +12,7 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
     fig = plt.figure(**kwargs)
 
     levels = np.sqrt(np.max(z)) * np.asarray((0.05, 0.2, 0.5, 0.75, 1.0))
-    z_int = np.sum(z, axis=None)
+    z_int = np.nansum(z, axis=None)
 
     # Central 2D plot
     ax_2D = fig.add_axes([0.10, 0.10, 0.76, 0.72], label='2D')
@@ -25,11 +25,15 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
     ax_x.get_xaxis().set_visible(False)
     ax_x.get_yaxis().set_visible(False)
 
+    # Calculate marginals and means
     marg_x = np.nansum(z, axis=0)
+    mean_x = np.sum(marg_x * x / z_int)
     marg_x /= np.nanmax(marg_x)
-    ax_x.plot(x, marg_x)
     marg_y = np.nansum(z, axis=1)
+    mean_y = np.sum(marg_y * y / z_int)
     marg_y /= np.nanmax(marg_y)
+
+    ax_x.plot(x, marg_x)
     l_p, = ax_y.plot(marg_y, y)
     if scatter:
         xx, yy = np.meshgrid(x, y)
@@ -42,12 +46,10 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
     ax_y.set_ylim(y[0], y[-1])
     ax_y.set_xlim(0, 1)
 
-    # Calculate mean values and mark them
-    mean_x = np.sum(marg_x * x / z_int)
+    # mark mean values 
     ax_x.axvline(x=mean_x, linestyle='dashed', color='black')
     ax_x.text(x=mean_x, y=max(marg_x)*1.1, s='%4.1f %s' % (mean_x, xunit),
               horizontalalignment='center')
-    mean_y = np.sum(marg_y * y / z_int)
     ax_y.axhline(y=mean_y, linestyle='dashed', color='black')
     ax_y.text(x=max(marg_y) * 1.02, y=mean_y, s='%4.1f %s' % (mean_y, yunit),
               rotation=270.,
