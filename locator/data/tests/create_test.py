@@ -48,7 +48,7 @@ def create_event(ievent, depth):
         phase = {'code': 'R1',
                  'datetime': '%s' % (origin_time + time[2]),
                  'frequency': 1. / period,
-                 'sigma': 60.
+                 'sigma': 80.
                  }
         phases.append(phase)
     baz = time[1]
