@@ -6,23 +6,26 @@
 __author__ = "Simon Stähler"
 
 import numpy as np
-import obspy
+from obspy import UTCDateTime
 from obspy.taup import TauPyModel
 import argparse
-
+from os.path import join as pjoin
+from os import makedirs
+from tqdm import tqdm
 
 def define_arguments():
     parser = argparse.ArgumentParser(
         description='Create test file with surface and body wave traveltimes')
-    parser.add_argument('ievent', type=int,
+    parser.add_argument('ievent',
                         help='event number in surface wave traveltime file')
     parser.add_argument('depth', type=float,
                        help='event depth in kilometer')
     return parser.parse_args()
 
 
-def create_input(phases, baz):
-    with open('locator_input.yml', 'w') as f:
+def create_input(phases, baz, outdir):
+    makedirs(outdir, exist_ok=True)
+    with open(pjoin(outdir, 'locator_input.yml'), 'w') as f:
         f.write('velocity_model:             MQS_Ops\n')
         f.write('velocity_model_uncertainty: 1.5\n')
         f.write('backazimuth:\n')
@@ -38,9 +41,9 @@ def create_input(phases, baz):
                 f.write('    frequency: %s\n' % phase['frequency'])
 
 
-def create_event(ievent, depth):
+def create_event(ievent, depth, outdir='.'):
     model = TauPyModel('./locator/data/tests/MSS_ORT/MQSORT_TAY.npz')
-    origin_time = obspy.UTCDateTime('2019-01-01T00:00:00')
+    origin_time = UTCDateTime('2019-01-01T00:00:00')
     phases = []
     for period in [14., 40., 113.]:
         surface_wave_times = np.loadtxt('./locator/data/tests/MSS_ORT/ttr_%03d.txt' % period)
@@ -63,10 +66,18 @@ def create_event(ievent, depth):
                      'sigma': 5.
                      }
             phases.append(phase)
-    print('True distance: %5.1f degree' % dist)
-    create_input(phases, baz)
+    create_input(phases, baz, outdir)
+    return dist
 
 
 if __name__ == '__main__':
     args = define_arguments()
-    create_event(args.ievent, args.depth)
+    if type(args.ievent) == int:
+        create_event(args.ievent, args.depth)
+    elif args.ievent == 'all':
+        for i in tqdm(range(0, 200)):
+            depth = np.random.rand((1))[0] * 50
+            dist = create_event(i, depth)
+            create_event(i, depth,
+                         'tests/event_%03d_depth_%03d_dist_%5.1f' %
+                         (i, depth, dist))
