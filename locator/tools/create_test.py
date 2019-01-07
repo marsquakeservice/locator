@@ -47,7 +47,7 @@ def create_event(ievent, depth, phases, outdir='.'):
     model = TauPyModel('./locator/data/tests/MSS_ORT/MQSORT_TAY.npz')
     origin_time = UTCDateTime('2019-01-01T00:00:00')
     phases = []
-    for period in [14, 20., 40., 60., 113.]:
+    for period in [14., 20., 40., 60., 113.]:
         surface_wave_times = np.loadtxt('./locator/data/tests/MSS_ORT/ttr_%03d.txt' % period)
         time = surface_wave_times[ievent]
         phase = {'code': 'R1',
@@ -79,7 +79,7 @@ if __name__ == '__main__':
     elif args.ievent == 'all':
         for i in range(0, 200):
             depth = np.random.rand((1))[0] * 50
-            dist = create_event(i, depth)
+            dist = create_event(i, depth, phases=args.phases)
             print('%4d: %4d km, %5.1f degree' % (i, depth, dist))
             create_event(i, depth,
                          'tests/event_%03d_depth_%03d_dist_%05.1f' %
