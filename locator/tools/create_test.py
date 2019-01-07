@@ -45,7 +45,7 @@ def create_event(ievent, depth, outdir='.'):
     model = TauPyModel('./locator/data/tests/MSS_ORT/MQSORT_TAY.npz')
     origin_time = UTCDateTime('2019-01-01T00:00:00')
     phases = []
-    for period in [14., 40., 113.]:
+    for period in [14, 20., 40., 60., 113.]:
         surface_wave_times = np.loadtxt('./locator/data/tests/MSS_ORT/ttr_%03d.txt' % period)
         time = surface_wave_times[ievent]
         phase = {'code': 'R1',
