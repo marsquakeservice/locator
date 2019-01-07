@@ -43,31 +43,38 @@ def create_input(phases, baz, outdir):
                 f.write('    frequency: %s\n' % phase['frequency'])
 
 
-def create_event(ievent, depth, phases, outdir='.'):
+def create_event(ievent, depth, phase_list, outdir='.'):
     model = TauPyModel('./locator/data/tests/MSS_ORT/MQSORT_TAY.npz')
     origin_time = UTCDateTime('2019-01-01T00:00:00')
     phases = []
-    for period in [14., 20., 40., 60., 113.]:
-        surface_wave_times = np.loadtxt('./locator/data/tests/MSS_ORT/ttr_%03d.txt' % period)
-        time = surface_wave_times[ievent]
-        phase = {'code': 'R1',
-                 'datetime': '%s' % (origin_time + time[2]),
-                 'frequency': 1. / period,
-                 'sigma': 80.
-                 }
-        phases.append(phase)
-    baz = time[1]
-    dist = time[0]
-    for phase_name in phases:
-        arr = model.get_travel_times(source_depth_in_km=depth,
-                                     distance_in_degree=dist,
-                                     phase_list=[phase_name])
-        if len(arr) > 0:
-            phase = {'code': phase_name,
-                     'datetime': '%s' % (origin_time + arr[0].time),
-                     'sigma': 5.
+    if 'R1' in phase_list:
+        for period in [14., 20., 40., 60., 113.]:
+            surface_wave_times = np.loadtxt('./locator/data/tests/MSS_ORT/ttr_%03d.txt' % period)
+            time = surface_wave_times[ievent]
+            phase = {'code': 'R1',
+                     'datetime': '%s' % (origin_time + time[2]),
+                     'frequency': 1. / period,
+                     'sigma': 80.
                      }
             phases.append(phase)
+
+    # Load one SW file again to get dist and BAZ
+    event_data = np.loadtxt(
+        './locator/data/tests/MSS_ORT/ttr_014.txt')
+    dat = event_data[ievent]
+    baz = dat[1]
+    dist = dat[0]
+    for phase_name in phase_list:
+        if phase_name is not 'R1':
+            arr = model.get_travel_times(source_depth_in_km=depth,
+                                         distance_in_degree=dist,
+                                         phase_list=[phase_name])
+            if len(arr) > 0:
+                phase = {'code': phase_name,
+                         'datetime': '%s' % (origin_time + arr[0].time),
+                         'sigma': 5.
+                         }
+                phases.append(phase)
     create_input(phases, baz, outdir)
     return dist
 
@@ -75,12 +82,12 @@ def create_event(ievent, depth, phases, outdir='.'):
 if __name__ == '__main__':
     args = define_arguments()
     if type(args.ievent) == int:
-        create_event(args.ievent, args.depth, phases=args.phases)
+        create_event(args.ievent, args.depth, phase_list=args.phases)
     elif args.ievent == 'all':
         for i in range(0, 200):
             depth = np.random.rand((1))[0] * 50
-            dist = create_event(i, depth, phases=args.phases)
+            dist = create_event(i, depth, phase_list=args.phases)
             print('%4d: %4d km, %5.1f degree' % (i, depth, dist))
             create_event(i, depth,
-                         'tests/event_%03d_depth_%03d_dist_%05.1f' %
-                         (i, depth, dist), phases=args.phases)
+                         outdir='tests/event_%03d_depth_%03d_dist_%05.1f' %
+                         (i, depth, dist), phase_list=args.phases)
