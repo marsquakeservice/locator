@@ -24,9 +24,10 @@ def define_arguments():
 
 
 def create_input(phases, baz, outdir):
-    makedirs(outdir, exist_ok=True)
+    if outdir is not '.':
+        makedirs(outdir)
     with open(pjoin(outdir, 'locator_input.yml'), 'w') as f:
-        f.write('velocity_model:             MQS_Ops\n')
+        f.write('velocity_model:             MQS_Ops.2019-01-03_250\n')
         f.write('velocity_model_uncertainty: 1.5\n')
         f.write('backazimuth:\n')
         f.write('    value: %5.1f\n' % baz)
@@ -79,5 +80,5 @@ if __name__ == '__main__':
             depth = np.random.rand((1))[0] * 50
             dist = create_event(i, depth)
             create_event(i, depth,
-                         'tests/event_%03d_depth_%03d_dist_%5.1f' %
+                         'tests/event_%03d_depth_%03d_dist_%05.1f' %
                          (i, depth, dist))
