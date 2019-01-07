@@ -11,7 +11,6 @@ from obspy.taup import TauPyModel
 import argparse
 from os.path import join as pjoin
 from os import makedirs
-from tqdm import tqdm
 
 def define_arguments():
     parser = argparse.ArgumentParser(
@@ -20,6 +19,8 @@ def define_arguments():
                         help='event number in surface wave traveltime file')
     parser.add_argument('depth', type=float,
                        help='event depth in kilometer')
+    parser.add_argument('-p', '--phases', nargs='+', type=str,
+                        default=['P', 'S'])
     return parser.parse_args()
 
 
@@ -41,7 +42,7 @@ def create_input(phases, baz, outdir):
                 f.write('    frequency: %s\n' % phase['frequency'])
 
 
-def create_event(ievent, depth, outdir='.'):
+def create_event(ievent, depth, phases, outdir='.'):
     model = TauPyModel('./locator/data/tests/MSS_ORT/MQSORT_TAY.npz')
     origin_time = UTCDateTime('2019-01-01T00:00:00')
     phases = []
@@ -56,7 +57,7 @@ def create_event(ievent, depth, outdir='.'):
         phases.append(phase)
     baz = time[1]
     dist = time[0]
-    for phase_name in ['P', 'S', 'PP', 'pP']:
+    for phase_name in phases:
         arr = model.get_travel_times(source_depth_in_km=depth,
                                      distance_in_degree=dist,
                                      phase_list=[phase_name])
@@ -73,11 +74,12 @@ def create_event(ievent, depth, outdir='.'):
 if __name__ == '__main__':
     args = define_arguments()
     if type(args.ievent) == int:
-        create_event(args.ievent, args.depth)
+        create_event(args.ievent, args.depth, phases=args.phases)
     elif args.ievent == 'all':
-        for i in tqdm(range(0, 200)):
+        for i in range(0, 200):
             depth = np.random.rand((1))[0] * 50
             dist = create_event(i, depth)
+            print('%4d: %4d km, %5.1f degree' % (i, depth, dist))
             create_event(i, depth,
-                         'tests/event_%03d_depth_%03d_dist_%5.1f' %
-                         (i, depth, dist))
+                         outdir='tests/event_%03d_depth_%03d_dist_%5.1f' %
+                         (i, depth, dist), phases=args.phases)
