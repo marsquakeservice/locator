@@ -3,7 +3,7 @@
 """
 
 """
-from locator.graphics import plot_phases, plot, plot_models
+from locator.graphics import plot_phases, plot, plot_models, _write_model_density
 from locator.misfits import calc_p
 from locator.output import write_result
 from locator.input import load_tt, read_model_list, read_input
@@ -104,6 +104,7 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                     input['freqs'], input['tt_meas'],
                     input['sigma'])
         plot_models(p, files, tt_path)
+        _write_model_density(p, files, tt_path)
     write_result(file_out=output_file,
                  model_output=model_output,
                  modelset_name=input['model_name'],

@@ -111,8 +111,8 @@ def plot_models(p, files, tt_path):
     plt.savefig('model_likelihood.png')
     plt.close('all')
 
-    # Plot with all mantle profiles
     models_p /= max(models_p)
+    # Plot with all mantle profiles
     fig, ax = plt.subplots(1, 2, figsize=(10,7))
     for fnam, model_p in zip(files, models_p):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
@@ -135,6 +135,49 @@ def plot_models(p, files, tt_path):
         a.set_ylabel('depth / km')
 
     plt.savefig('velocity_models.png', dpi=200)
+
+def _write_model_density(p, files, tt_path):
+    from h5py import File
+    depths_target = np.arange(0.0, 500.0, 2.0)
+    vp_sums = np.zeros_like(depths_target)
+    vp_sums2 = np.zeros_like(depths_target)
+    vs_sums = np.zeros_like(depths_target)
+    vs_sums2 = np.zeros_like(depths_target)
+    p_model = np.sum(p, axis=(1, 2))
+    p_model /= max(p_model)
+    nmodel = 0
+    for fnam, model_p in zip(files, p_model):
+        with File(pjoin(tt_path, 'tt', fnam)) as f:
+            if model_p > 0.1:
+                nmodel += 1
+                radius = np.asarray(f['mantle/radius'])
+                depths = (max(radius) - radius) * 1e-3
+
+
+                vp_ipl = np.interp(xp=depths[::-1],
+                                   fp=f['mantle/vp'].value[::-1],
+                                   x=depths_target)
+                vs_ipl = np.interp(xp=depths[::-1],
+                                   fp=f['mantle/vs'].value[::-1],
+                                   x=depths_target)
+                vp_sums += vp_ipl
+                vp_sums2 += vp_ipl**2
+                vs_sums += vs_ipl
+                vs_sums2 += vs_ipl**2
+    print('nmodel: ', nmodel)
+    fnam = 'model_mean_sigma.txt'
+    vp_mean = vp_sums / nmodel
+    vs_mean = vs_sums / nmodel
+    vp_sigma = np.sqrt((vp_sums)**2 / nmodel - vp_mean**2)
+    vs_sigma = np.sqrt((vs_sums)**2 / nmodel - vs_mean**2)
+    with open(fnam, 'w') as f:
+        f.write('%6s, %8s, %8s, %8s, %8s\n' %
+                ('depth', 'vp_mean', 'vp_sig', 'vs_mean', 'vs_sig'))
+        for idepth in range(0, len(depths_target)):
+            f.write('%6.1f, %8.2f, %8.2f, %8.2f, %8.2f\n' %
+                    (depths_target[idepth],
+                     vp_mean[idepth], vp_sigma[idepth],
+                     vs_mean[idepth], vs_sigma[idepth]))
 
 
 def plot_phases(tt, p, phase_list, freqs, tt_meas, sigma):

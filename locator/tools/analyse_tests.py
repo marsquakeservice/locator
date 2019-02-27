@@ -19,7 +19,7 @@ for ifile, file in enumerate(files):
     dist_true = float(file[31:38])
     with open(pjoin(file, 'locator_output.yml')) as f:
         data_yaml = load(f)
-        pdf = np.asarray(data_yaml['pdf_dist_sum']['probabilities'])
+        pdf = np.asarray(data_yaml['pdf_depth_sum']['probabilities'])
 
         pdf[:,1] /= max(pdf[:,1])
         cdf = np.cumsum(pdf[:, 1])
