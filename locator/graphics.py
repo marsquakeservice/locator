@@ -138,13 +138,13 @@ def plot_models(p, files, tt_path):
 
 def _write_model_density(p, files, tt_path):
     from h5py import File
-    depths_target = np.arange(0.0, 500.0, 2.0)
+    depths_target = np.arange(0.0, 1000.0, 2.0)
     vp_sums = np.zeros_like(depths_target)
     vp_sums2 = np.zeros_like(depths_target)
     vs_sums = np.zeros_like(depths_target)
     vs_sums2 = np.zeros_like(depths_target)
     p_model = np.sum(p, axis=(1, 2))
-    p_model /= max(p_model)
+    p_model /= np.sum(p_model)
     nmodel = 0
     for fnam, model_p in zip(files, p_model):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
@@ -160,16 +160,16 @@ def _write_model_density(p, files, tt_path):
                 vs_ipl = np.interp(xp=depths[::-1],
                                    fp=f['mantle/vs'].value[::-1],
                                    x=depths_target)
-                vp_sums += vp_ipl
-                vp_sums2 += vp_ipl**2
-                vs_sums += vs_ipl
-                vs_sums2 += vs_ipl**2
+                vp_sums += vp_ipl * model_p
+                vp_sums2 += vp_ipl**2 * model_p
+                vs_sums += vs_ipl * model_p
+                vs_sums2 += vs_ipl**2 * model_p
     print('nmodel: ', nmodel)
     fnam = 'model_mean_sigma.txt'
-    vp_mean = vp_sums / nmodel
-    vs_mean = vs_sums / nmodel
-    vp_sigma = np.sqrt((vp_sums)**2 / nmodel - vp_mean**2)
-    vs_sigma = np.sqrt((vs_sums)**2 / nmodel - vs_mean**2)
+    vp_mean = vp_sums
+    vs_mean = vs_sums
+    vp_sigma = np.sqrt(vp_sums2 - vp_mean**2)
+    vs_sigma = np.sqrt(vs_sums2 - vs_mean**2)
     with open(fnam, 'w') as f:
         f.write('%6s, %8s, %8s, %8s, %8s\n' %
                 ('depth', 'vp_mean', 'vp_sig', 'vs_mean', 'vs_sig'))
