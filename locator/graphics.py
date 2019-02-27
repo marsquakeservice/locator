@@ -148,22 +148,21 @@ def _write_model_density(p, files, tt_path):
     nmodel = 0
     for fnam, model_p in zip(files, p_model):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
-            if model_p > 0.1:
-                nmodel += 1
-                radius = np.asarray(f['mantle/radius'])
-                depths = (max(radius) - radius) * 1e-3
+            nmodel += 1
+            radius = np.asarray(f['mantle/radius'])
+            depths = (max(radius) - radius) * 1e-3
 
 
-                vp_ipl = np.interp(xp=depths[::-1],
-                                   fp=f['mantle/vp'].value[::-1],
-                                   x=depths_target)
-                vs_ipl = np.interp(xp=depths[::-1],
-                                   fp=f['mantle/vs'].value[::-1],
-                                   x=depths_target)
-                vp_sums += vp_ipl * model_p
-                vp_sums2 += vp_ipl**2 * model_p
-                vs_sums += vs_ipl * model_p
-                vs_sums2 += vs_ipl**2 * model_p
+            vp_ipl = np.interp(xp=depths[::-1],
+                               fp=f['mantle/vp'].value[::-1],
+                               x=depths_target)
+            vs_ipl = np.interp(xp=depths[::-1],
+                               fp=f['mantle/vs'].value[::-1],
+                               x=depths_target)
+            vp_sums += vp_ipl * model_p
+            vp_sums2 += vp_ipl**2 * model_p
+            vs_sums += vs_ipl * model_p
+            vs_sums2 += vs_ipl**2 * model_p
     print('nmodel: ', nmodel)
     fnam = 'model_mean_sigma.txt'
     vp_mean = vp_sums
