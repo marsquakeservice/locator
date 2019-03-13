@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from os.path import join as pjoin
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('agg')
 from matplotlib import pyplot as plt
+from h5py import File
 
 
 def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
@@ -16,9 +17,11 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
 
     # Central 2D plot
     ax_2D = fig.add_axes([0.10, 0.10, 0.76, 0.72], label='2D')
-    ax_x = fig.add_axes([0.10, 0.82, 0.76, 0.12], label='y_marginal', sharex=ax_2D)
+    ax_x = fig.add_axes([0.10, 0.82, 0.76, 0.12], label='y_marginal',
+                        sharex=ax_2D)
     plt.axis('off')
-    ax_y = fig.add_axes([0.86, 0.10, 0.11, 0.72], label='x_marginal', sharey=ax_2D)
+    ax_y = fig.add_axes([0.86, 0.10, 0.11, 0.72], label='x_marginal',
+                        sharey=ax_2D)
     plt.axis('off')
     ax_cb = fig.add_axes([0.86, 0.84, 0.017, 0.12], label='colorbar')
 
@@ -68,13 +71,15 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
         l_pi, = ax_y.plot(prior, y, 'k--', label='prior')
         l_l, = ax_y.plot(likelihood, y, 'r:', label='likelihood')
 
-    ax_y.legend((l_p, l_l, l_pi), ('posterior', 'likelihood', 'prior'), loc=(0, -0.1))
+    ax_y.legend((l_p, l_l, l_pi), ('posterior', 'likelihood', 'prior'),
+                loc=(0, -0.1))
 
     ax_2D.set_xlabel(xlabel)
     ax_2D.set_ylabel(ylabel)
 
     ax_2D.tick_params(bottom=True, top=True, left=True, right=True,
-                      labelbottom=True, labelleft=True, labeltop=False, labelright=False)
+                      labelbottom=True, labelleft=True,
+                      labeltop=False, labelright=False)
 
     plt.colorbar(mappable=cf, cax=ax_cb)
 
@@ -101,7 +106,6 @@ def plot(p, dis, dep, depth_prior=None, distance_prior=None):
 
 
 def plot_models(p, files, tt_path):
-    from h5py import File
     # Model likelihood plot
     models_p = np.sum(p, axis=(1, 2))
     plt.plot(models_p, '.')
@@ -119,10 +123,10 @@ def plot_models(p, files, tt_path):
             radius = np.asarray(f['mantle/radius'])
             radius = (max(radius) - radius) * 1e-3
             for a in ax:
-                lp,  = a.plot(f['mantle/vp'], radius, c='lightgrey',
-                              alpha=0.4, zorder=2)
-                ls,  = a.plot(f['mantle/vs'], radius,c='lightgrey',
-                              alpha=0.4, zorder=2)
+                a.plot(f['mantle/vp'], radius, c='lightgrey',
+                       alpha=0.4, zorder=2)
+                a.plot(f['mantle/vs'], radius,c='lightgrey',
+                       alpha=0.4, zorder=2)
                 lp,  = a.plot(f['mantle/vp'], radius, c='darkblue',
                               alpha=model_p**2, zorder=20)
                 ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
@@ -137,7 +141,6 @@ def plot_models(p, files, tt_path):
     plt.savefig('velocity_models.png', dpi=200)
 
 def _write_model_density(p, files, tt_path):
-    from h5py import File
     depths_target = np.arange(0.0, 1000.0, 2.0)
     vp_sums = np.zeros_like(depths_target)
     vp_sums2 = np.zeros_like(depths_target)

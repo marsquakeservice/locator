@@ -27,7 +27,7 @@ def calc_origin_time(p, t_ref, tt_P):
 
 
 def write_result(file_out, model_output, modelset_name,
-                 p, dep, dis, phase_list, tt_meas, freqs,
+                 p, dep, dis, phase_list, tt_meas, sigma, freqs,
                  tt_P, t_ref, baz,
                  weights, model_names,
                  p_threshold=1e-3):
@@ -90,6 +90,7 @@ def write_result(file_out, model_output, modelset_name,
                      depths=dep, distances=dis,
                      phase_list=phase_list,
                      tt_meas=tt_meas,
+                     sigma=sigma,
                      freqs=freqs,
                      t_ref=t_ref,
                      baz=baz,
@@ -187,7 +188,7 @@ def _write_model_misfits(p, origin_time_sum):
 
 
 def _write_h5_output(p, modelset_name, depths, distances,
-                     phase_list, tt_meas, t_ref, baz,
+                     phase_list, tt_meas, sigma, t_ref, baz,
                      freqs, origin_time, model_names, weights):
     fnam = 'locator_output_%s.h5' % \
            (origin_time.strftime(format='%y-%m-%dT%H%M'))
@@ -207,6 +208,7 @@ def _write_h5_output(p, modelset_name, depths, distances,
         f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore") for n in phase_list])
         f.create_dataset('model_names', data=[n.encode("utf-8", "ignore") for n in model_names])
         f.create_dataset('weights', data=weights)
+        f.create_dataset('sigma', data=sigma)
         f.create_dataset('tt_meas', data=tt_meas)
         f.create_dataset('freqs', data=freqs)
         f.create_dataset('t_ref', data=t_ref)

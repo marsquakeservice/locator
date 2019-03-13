@@ -147,10 +147,20 @@ def main(args):
     l_pick, = ax[0].plot(H5['tt_meas'][H5['phase_list']=='R1'], 
 		         H5['periods'][H5['phase_list']=='R1'], 'o', c='lime',
 		         zorder=9999)
-    ax[2].plot(H5['tt_meas'][H5['phase_list']=='G1'], 
+    l_pick, = ax[0].errorbar(x=H5['tt_meas'][H5['phase_list']=='R1'],
+                             y=H5['periods'][H5['phase_list']=='R1'],
+                             xerr=H5['sigma'][H5['phase_list']=='R1'],
+                             marker='o', c='lime',
+                             zorder=9999)
+    ax[2].plot(H5['tt_meas'][H5['phase_list']=='G1'],
                H5['periods'][H5['phase_list']=='G1'], 'o', c='lime',
                zorder=9999)
-    
+    ax[2].errorbar(x=H5['tt_meas'][H5['phase_list']=='G1'],
+                   y=H5['periods'][H5['phase_list']=='G1'],
+                   xerr=H5['sigma'][H5['phase_list']=='G1'],
+                   marker='o', c='lime',
+                   zorder=9999)
+
     ax[1].legend((l_pick, l_pred[0]), ('picked SW times', 'pred. disp. curve'),
                  loc=4)
 
@@ -173,7 +183,8 @@ def main(args):
         for iphase, phase in enumerate(H5['phase_list']):
             if phase not in ['R1', 'G1']:
                 ax[i].axvline(x=H5['tt_meas'][iphase], ls='--', c='r')
-                
+                ax[i].axvline(x=H5['tt_meas'][iphase], ls='--', c='r')
+
     ax[3].set_xlim(-t_pre, t_post)
     fig.savefig('phase_prediction_seis_long.png', dpi=400)
     ax[3].set_xlim(-t_pre, max(H5['tt_meas']*1.2))

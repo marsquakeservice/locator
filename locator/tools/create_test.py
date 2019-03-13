@@ -27,7 +27,9 @@ def define_arguments():
 def create_input(phases, baz, outdir):
     if outdir is not '.':
         makedirs(outdir)
-    with open(pjoin(outdir, 'locator_input.yml'), 'w') as f:
+    fnam = pjoin(outdir, 'locator_input.yml')
+    print('Creating locator input file %s' % fnam)
+    with open(fnam, 'w') as f:
         f.write('velocity_model:             MQS_Ops.2019-01-03_250\n')
         f.write('velocity_model_uncertainty: 1.5\n')
         f.write('backazimuth:\n')
@@ -81,9 +83,7 @@ def create_event(ievent, depth, phase_list, outdir='.'):
 
 if __name__ == '__main__':
     args = define_arguments()
-    if type(args.ievent) == int:
-        create_event(args.ievent, args.depth, phase_list=args.phases)
-    elif args.ievent == 'all':
+    if args.ievent == 'all':
         for i in range(0, 200):
             depth = np.random.rand((1))[0] * 50
             dist = create_event(i, depth, phase_list=args.phases)
@@ -91,3 +91,5 @@ if __name__ == '__main__':
             create_event(i, depth,
                          outdir='tests/event_%03d_depth_%03d_dist_%05.1f' %
                          (i, depth, dist), phase_list=args.phases)
+    else:
+        create_event(int(args.ievent), args.depth, phase_list=args.phases)

@@ -96,7 +96,6 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                          '  highest p: %8.2e\n' % np.max(p, axis=None) +
                          '  threshold: %8.2e\n ' % 1e-30)
 
-
     if plot_output:
         plot(p, dep=dep, dis=dis, depth_prior=depth_prior,
              distance_prior=distance_prior)
@@ -112,6 +111,7 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                  phase_list=input['phase_list'],
                  freqs=input['freqs'],
                  tt_meas=input['tt_meas'],
+                 sigma=input['sigma'],
                  baz=input['backazimuth'],
                  tt_P=tt_P, t_ref=input['tt_ref'],
                  weights=weights_all,
