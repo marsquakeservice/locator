@@ -21,8 +21,9 @@ def calc_origin_time(p, t_ref, tt_P):
                                             bins=np.arange(origin_min, origin_max, 2),
                                             density=True)
     time_bin_mid = (origin_times[0:-1] + origin_times[1:]) / 2.
-    origin_time_sum = UTCDateTime(np.sum(origin_pdf * (time_bin_mid))
-                                  / np.sum(origin_pdf) + t_ref)
+    origin_time_mean = np.sum(origin_pdf * (time_bin_mid)) / np.sum(origin_pdf) 
+    time_bin_mid -= origin_time_mean
+    origin_time_sum = UTCDateTime(origin_time_mean + t_ref)
     return origin_pdf, origin_time_sum, time_bin_mid
 
 
