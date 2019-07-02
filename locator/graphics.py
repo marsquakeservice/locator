@@ -93,7 +93,6 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
 
 
 def plot(p, dis, dep, depth_prior=None, distance_prior=None):
-
     fig, axs = plot_2D_with_marginals(dis, dep, p,
                                       x_aux=distance_prior,
                                       y_aux=depth_prior,
@@ -102,7 +101,7 @@ def plot(p, dis, dep, depth_prior=None, distance_prior=None):
                                       xunit='degree',
                                       yunit='km',
                                       figsize=(12, 7.5))
-    axs[0].set_ylim(600, 0)
+    axs[0].set_ylim(300, 0)
     fig.savefig('depth_distance.png', dpi=200)
     plt.close('all')
 
