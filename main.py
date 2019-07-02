@@ -3,7 +3,7 @@
 """
 
 """
-from locator.graphics import plot_phases, plot, plot_models
+from locator.graphics import plot_phases, plot, plot_models, _write_model_density
 from locator.misfits import calc_p
 from locator.output import write_result
 from locator.input import load_tt, read_model_list, read_input
@@ -96,7 +96,6 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                          '  highest p: %8.2e\n' % np.max(p, axis=None) +
                          '  threshold: %8.2e\n ' % 1e-30)
 
-
     if plot_output:
         plot(p, dep=dep, dis=dis, depth_prior=depth_prior,
              distance_prior=distance_prior)
@@ -104,6 +103,7 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                     input['freqs'], input['tt_meas'],
                     input['sigma'])
         plot_models(p, files, tt_path)
+        _write_model_density(p, files, tt_path)
     write_result(file_out=output_file,
                  model_output=model_output,
                  modelset_name=input['model_name'],
@@ -111,6 +111,7 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                  phase_list=input['phase_list'],
                  freqs=input['freqs'],
                  tt_meas=input['tt_meas'],
+                 sigma=input['sigma'],
                  baz=input['backazimuth'],
                  tt_P=tt_P, t_ref=input['tt_ref'],
                  weights=weights_all,

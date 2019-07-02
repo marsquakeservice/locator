@@ -52,7 +52,7 @@ def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
     tt_P[:, :, :, 0] = tt[:, :, :, idx_ref]
 
     # -1 is the value for no arrival at this distance/model/depth combo
-    tt[tt == -1] = 1e5
+    tt[tt == -1] = 2e5
     tt_P[tt_P == -1] = 1e5
 
     tt -= tt_P
