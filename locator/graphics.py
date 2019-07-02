@@ -198,7 +198,6 @@ def _write_model_density(p, files, tt_path):
             vp_sums2 += vp_ipl**2 * model_p
             vs_sums += vs_ipl * model_p
             vs_sums2 += vs_ipl**2 * model_p
-    print('nmodel: ', nmodel)
     fnam = 'model_mean_sigma.txt'
     vp_mean = vp_sums
     vs_mean = vs_sums
