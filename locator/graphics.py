@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from os.path import join as pjoin
-#import matplotlib
-#matplotlib.use('agg')
+import matplotlib
+
+#matplotlib.use('Agg')
 from matplotlib import pyplot as plt
 from h5py import File
 
+from locator.general_functions import _calc_marginals
 
 def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
                            xlabel=None, ylabel=None, xunit='', yunit='',
                            scatter=False, **kwargs):
     fig = plt.figure(**kwargs)
-
-    levels = np.sqrt(np.max(z)) * np.asarray((0.05, 0.2, 0.5, 0.75, 1.0))
-    z_int = np.nansum(z, axis=None)
 
     # Central 2D plot
     ax_2D = fig.add_axes([0.10, 0.10, 0.76, 0.72], label='2D')
@@ -28,21 +27,28 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
     ax_x.get_xaxis().set_visible(False)
     ax_x.get_yaxis().set_visible(False)
 
-    # Calculate marginals and means
-    marg_x = np.nansum(z, axis=0)
-    mean_x = np.sum(marg_x * x / z_int)
+    # # Calculate marginals and means
+    mean_y, mean_x, marg_z, marg_y, marg_x = \
+        _calc_marginals(y, x, z)
+
+    # normalize marginals (for plotting)
     marg_x /= np.nanmax(marg_x)
-    marg_y = np.nansum(z, axis=1)
-    mean_y = np.sum(marg_y * y / z_int)
     marg_y /= np.nanmax(marg_y)
+
+    # Integrate over all models
+    z_sum = np.sum(z, axis=0)
 
     ax_x.plot(x, marg_x)
     l_p, = ax_y.plot(marg_y, y)
     if scatter:
         xx, yy = np.meshgrid(x, y)
-        cf = ax_2D.scatter(xx, yy, c=np.sqrt(z), cmap='afmhot_r', marker='+')
+        cf = ax_2D.scatter(xx, yy, c=np.sqrt(z_sum), cmap='afmhot_r',
+                           marker='+')
     else:
-        cf = ax_2D.contourf(x, y, np.sqrt(z), cmap='afmhot_r', levels=levels)
+        levels = np.sqrt(np.max(z_sum)) * \
+                 np.asarray((0.05, 0.2, 0.5, 0.75, 1.0))
+        cf = ax_2D.contourf(x, y, np.sqrt(z_sum), cmap='afmhot_r',
+                            levels=levels)
 
     ax_x.set_xlim(x[0], x[-1])
     ax_x.set_ylim(0, 1)
@@ -51,7 +57,7 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
 
     # mark mean values 
     ax_x.axvline(x=mean_x, linestyle='dashed', color='black')
-    ax_x.text(x=mean_x, y=max(marg_x)*1.1, s='%4.1f %s' % (mean_x, xunit),
+    ax_x.text(x=mean_x, y=max(marg_x) * 1.1, s='%4.1f %s' % (mean_x, xunit),
               horizontalalignment='center')
     ax_y.axhline(y=mean_y, linestyle='dashed', color='black')
     ax_y.text(x=max(marg_y) * 1.02, y=mean_y, s='%4.1f %s' % (mean_y, yunit),
@@ -78,8 +84,8 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
     ax_2D.set_ylabel(ylabel)
 
     ax_2D.tick_params(bottom=True, top=True, left=True, right=True,
-                      labelbottom=True, labelleft=True,
-                      labeltop=False, labelright=False)
+                      labelbottom=True, labelleft=True, labeltop=False,
+                      labelright=False)
 
     plt.colorbar(mappable=cf, cax=ax_cb)
 
@@ -87,20 +93,16 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
 
 
 def plot(p, dis, dep, depth_prior=None, distance_prior=None):
-    nmodel, ndepth, ndist = p.shape
 
-    # Depth-distance matrix
-    depthdist = np.sum(p, axis=(0)) / nmodel
-
-    fig, axs = plot_2D_with_marginals(dis, dep, depthdist,
+    fig, axs = plot_2D_with_marginals(dis, dep, p,
                                       x_aux=distance_prior,
                                       y_aux=depth_prior,
                                       xlabel='distance / degree',
                                       ylabel='depth / km',
                                       xunit='degree',
                                       yunit='km',
-                                      figsize=(12,7.5))
-    axs[0].set_ylim(150, 0)
+                                      figsize=(12, 7.5))
+    axs[0].set_ylim(600, 0)
     fig.savefig('depth_distance.png', dpi=200)
     plt.close('all')
 
@@ -115,29 +117,59 @@ def plot_models(p, files, tt_path):
     plt.savefig('model_likelihood.png')
     plt.close('all')
 
-    models_p /= max(models_p)
     # Plot with all mantle profiles
-    fig, ax = plt.subplots(1, 2, figsize=(10,7))
+    models_p /= max(models_p)
+    fig, ax = plt.subplots(2, 2, figsize=(10, 9))
     for fnam, model_p in zip(files, models_p):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
             radius = np.asarray(f['mantle/radius'])
             radius = (max(radius) - radius) * 1e-3
-            for a in ax:
-                a.plot(f['mantle/vp'], radius, c='lightgrey',
-                       alpha=0.4, zorder=2)
-                a.plot(f['mantle/vs'], radius,c='lightgrey',
-                       alpha=0.4, zorder=2)
-                lp,  = a.plot(f['mantle/vp'], radius, c='darkblue',
-                              alpha=model_p**2, zorder=20)
-                ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
-                              alpha=model_p**2, zorder=20)
-    ax[0].set_ylim(2200, 0)
-    ax[1].set_ylim(220, 0)
-    ax[1].legend((lp, ls), ('vp', 'vs'))
-    for a in ax:
-        a.set_xlabel('velocity / m/s')
-        a.set_ylabel('depth / km')
+            # for a in ax:
+            #    lp,  = a.plot(f['mantle/vp'], radius, c='lightgrey',
+            #                  alpha=0.4, zorder=2)
+            #    ls,  = a.plot(f['mantle/vs'], radius,c='lightgrey',
+            #                  alpha=0.4, zorder=2)
+            #    lp,  = a.plot(f['mantle/vp'], radius, c='darkblue',
+            #                  alpha=model_p**2, zorder=20)
+            #    ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
+            #                  alpha=model_p**2, zorder=20)
+            if not fnam[0] == 'C':
+                lp, = ax[0][0].plot(f['mantle/vp'], radius, c='lightgrey',
+                                    lw=0.5, alpha=0.4, zorder=2)
+                ls, = ax[0][0].plot(f['mantle/vs'], radius, c='darkred',
+                                    lw=0.5, alpha=0.4, zorder=2)
+                if model_p > 0.3:
+                    lp, = ax[0][1].plot(f['mantle/vp'], radius, c='darkblue',
+                                        lw=0.5, alpha=model_p ** 2, zorder=20)
+                    ls, = ax[0][1].plot(f['mantle/vs'], radius, c='darkred',
+                                        lw=0.5, alpha=model_p ** 2, zorder=20)
+                if model_p > 0.3:
+                    lp, = ax[1][1].plot(f['mantle/vs'] - f['mantle/vs'][-7],
+                                        radius, c='darkred', lw=0.5,
+                                        alpha=model_p ** 2, zorder=20)
+                lp, = ax[1][0].plot(f['mantle/vs'] - f['mantle/vs'][-7],
+                                    radius, c='darkred', lw=0.5,
+                                    alpha=0.4, zorder=2)
 
+    for a in ax.flatten():
+        a.set_ylim(600, 0)
+    ax[0][0].set_xlim(3300, 4700)
+    ax[0][1].set_xlim(3300, 4700)
+    # ax[0][1].legend((lp, ls), ('vp', 'vs'))
+    ax[1][0].set_xlim(-1000, 400)
+    ax[1][1].set_xlim(-1000, 400)
+    # ax[1][1].legend((lp, ls), ('vp', 'vs'))
+    ax[0][0].set_title('V_S, all models')
+    ax[0][1].set_title('V_S, allowed models')
+    ax[1][0].set_title('V_S - V_S (low crust), all models')
+    ax[1][1].set_title('V_S - V_S (low crust), allowed models')
+    for a in ax[0]:
+        a.set_xlabel('velocity, S-waves [m/s]')
+        a.set_ylabel('depth [km]')
+    for a in ax[1]:
+        a.set_xlabel('reduced velocity, S-waves [m/s]')
+        a.set_ylabel('depth [km]')
+    plt.tight_layout()
     plt.savefig('velocity_models.png', dpi=200)
 
 def _write_model_density(p, files, tt_path):
@@ -188,7 +220,8 @@ def plot_phases(tt, p, phase_list, freqs, tt_meas, sigma):
 
     for iax, ax in enumerate(axs):
         width = max(50., sigma[iax] * 2.0)
-        phase_mean = np.sum(tt[:, :, :, iax] * p, axis=None) / np.sum(p, axis=None)
+        phase_mean = np.sum(tt[:, :, :, iax] * p, axis=None) / np.sum(p,
+                                                                      axis=None)
         ax.hist(tt[:, :, :, iax].flatten(),
                 weights=p[:, :, :].flatten(),
                 bins=np.linspace(tt_meas[iax] - width,
@@ -198,13 +231,13 @@ def plot_phases(tt, p, phase_list, freqs, tt_meas, sigma):
         ax.axvline(x=tt_meas[iax] + sigma[iax], c='r', ls='--')
         ax.axvline(x=phase_mean, c='darkgreen', lw=2)
         if phase_list[iax] in ['R1', 'G1']:
-            phase_string = '%s %3ds'% (phase_list[iax],
-                                       int(1./freqs[iax]))
+            phase_string = '%s %3ds' % (phase_list[iax],
+                                        int(1. / freqs[iax]))
         else:
             phase_string = phase_list[iax]
         ax.text(x=0.05, y=0.5, s=phase_string,
                 fontsize=14, weight='bold',
-                transform = ax.transAxes)
+                transform=ax.transAxes)
     plt.tight_layout()
     plt.savefig('phase_misfits.png')
     plt.close('all')

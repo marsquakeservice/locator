@@ -7,6 +7,8 @@ from platform import uname
 import sys
 
 # let YAML output fit into a IEEE 754 single format float
+from locator.general_functions import _calc_marginals
+
 YAML_OUTPUT_SMALLEST_FLOAT_ABOVE_ZERO = 1.0e-37
 
 
@@ -32,17 +34,15 @@ def write_result(file_out, model_output, modelset_name,
                  tt_P, t_ref, baz,
                  weights, model_names,
                  p_threshold=1e-3):
-    p_dist = np.sum(p, axis=(0, 1))
-    p_depth = np.sum(p, axis=(0, 2))
-    p_depdis = np.sum(p, axis=0)
 
-    pdf_depth_sum = _listify(dep, p_depth)
-    depth_sum = np.sum(dep * p_depth) / np.sum(p_depth)
-
-    pdf_dist_sum = _listify(dis, p_dist)
-    dist_sum = np.sum(dis * p_dist) / np.sum(p_dist)
+    depth_mean, dist_mean, p_depdis, p_depth, p_dist = \
+        _calc_marginals(dep, dis, p)
 
     origin_pdf, origin_time_sum, time_bin_mid = calc_origin_time(p, t_ref, tt_P)
+
+    # Listify things for output to the YAML files
+    pdf_depth_sum = _listify(dep, p_depth)
+    pdf_dist_sum = _listify(dis, p_dist)
     pdf_origin_sum = _listify(time_bin_mid, origin_pdf)
 
     # Create depth-distance score list
@@ -76,7 +76,7 @@ def write_result(file_out, model_output, modelset_name,
         _write_ddscore(f, dep=dep.tolist(), dis=dis.tolist(),
                        ddscore=ddscore)
 
-        _write_single(f, depth_sum=depth_sum, distance_sum=dist_sum,
+        _write_single(f, depth_sum=depth_mean, distance_sum=dist_mean,
                       depth_phase_count=int('pP' in phase_list),
                       origin_time_sum=origin_time_sum,
                       system_configuration=uname_string)
