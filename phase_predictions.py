@@ -14,7 +14,7 @@ from os import environ as env
 
 t_post = 10800
 t_pre = 50
-fmin = 1./100.
+fmin = 1./30.
 
 def define_arguments():
     helptext = 'Predict phase arrivals based on locator solution'
@@ -164,8 +164,10 @@ def main(args):
     fig.savefig('phase_prediction_spec.png', dpi=200)
 
 
-    st.integrate()
-    st.filter('highpass', freq=fmin, zerophase=True)
+    #st.integrate()
+
+    st.filter('highpass', freq=1./20., zerophase=True, corners=6)
+    st.filter('lowpass', freq=1., zerophase=True, corners=6)
     for i in range(0, 3):
         ax[i].clear()
         ax[i].plot(st[i].times() - t_pre, st[i].data, c='darkgrey', lw=0.8)
@@ -176,13 +178,14 @@ def main(args):
                 
     ax[3].set_xlim(-t_pre, t_post)
     fig.savefig('phase_prediction_seis_long.png', dpi=400)
-    ax[3].set_xlim(-t_pre, max(H5['tt_meas']*1.2))
+    ax[3].set_xlim(-t_pre, 900) #max(H5['tt_meas']*2.0))
     for a in ax[0:3]:
-        a.set_ylim(-1e-7, 1e-7)
+        a.set_ylim(-1e-8, 1e-8)
     fig.savefig('phase_prediction_seis.png', dpi=400)
+    plt.show()
     ax[3].set_xlim(-t_pre, 250)
     for a in ax[0:3]:
-        a.set_ylim(-1e-7, 1e-7)
+        a.set_ylim(-1e-8, 1e-8)
     fig.savefig('phase_prediction_seis_short.png', dpi=400)
     plt.close()
 
@@ -201,9 +204,9 @@ def main(args):
 
 
 def read_waveform(waveform_dir, t_ref, stat, net, baz,
-                  channels=['MHU', 'MHV', 'MHW'], location='02'):
+                  channels=['BHU', 'BHV', 'BHW'], location='03'):
     st = Stream()
-    inv = read_inventory('7J.SYNT3.seed')
+    inv = read_inventory('inventory.xml')
     t_end = t_ref + t_post
     t_start = t_ref - t_pre
     for channel in channels:
@@ -212,11 +215,11 @@ def read_waveform(waveform_dir, t_ref, stat, net, baz,
                       '%s.%s.%s.%s.D.%04d.%03d' %
                       (net, stat, location, channel, t_ref.year, t_ref.julday)))
         st += read(fnam, starttime=t_start-3600, endtime=t_end+3600)
-        fnam = (pjoin(waveform_dir,
-                      channel+'.D',
-                      '%s.%s.%s.%s.D.%04d.%03d' %
-                      (net, stat, location, channel, t_ref.year, t_ref.julday+1)))
-        st += read(fnam, starttime=t_start-3600, endtime=t_end+3600)
+        # fnam = (pjoin(waveform_dir,
+        #               channel+'.D',
+        #               '%s.%s.%s.%s.D.%04d.%03d' %
+        #               (net, stat, location, channel, t_ref.year, t_ref.julday+1)))
+        # st += read(fnam, starttime=t_start-3600, endtime=t_end+3600)
     st.merge()
     st.remove_response(inv, pre_filt=(fmin*0.8, fmin, 1./1.5, 1./2))
     st.differentiate()
@@ -225,8 +228,8 @@ def read_waveform(waveform_dir, t_ref, stat, net, baz,
     st.trim(starttime=t_start, endtime=t_end)
     #st_ZNE = st.rotate(method='->ZNE', inventory=inv)
     st_ZNE = st._rotate_specific_channels_to_zne(network=net, station=stat,
-                                                 location='02',
-                                                 channels=['MHU', 'MHV', 'MHW'],
+                                                 location='03',
+                                                 channels=['BHU', 'BHV', 'BHW'],
                                                  inventory=inv)
     st_ZRT = st_ZNE.rotate(method='NE->RT', back_azimuth=baz)
     return st_ZRT
