@@ -12,7 +12,7 @@ def _get_median(x, p_x):
     return x_ipl[np.argmin(abs(p_cum - 0.5))]
 
 
-def _calc_marginals(dep, dis, p):
+def calc_marginals_depdis(dep, dis, p):
     """
     Calculate depth and distance marginals from full P-matrix taking the
     irregular support points for depth and distance into account
@@ -21,8 +21,8 @@ def _calc_marginals(dep, dis, p):
     :param p: 3D array with probabilities: (nmodels, ndepths, ndistances)
     :return:
     """
-    deldis = calc_del(dis).reshape((1, 1, len(dis)))
-    deldep = calc_del(dep).reshape((1, len(dep), 1))
+    deldis = _calc_del(dis).reshape((1, 1, len(dis)))
+    deldep = _calc_del(dep).reshape((1, len(dep), 1))
     p_dist = np.sum(p * deldep, axis=(0, 1))
     p_depth = np.sum(p * deldis, axis=(0, 2))
     p_depdis = np.sum(p * deldis * deldep, axis=0)
@@ -32,7 +32,23 @@ def _calc_marginals(dep, dis, p):
     return depth_mean, dist_mean, p_depdis, p_depth, p_dist
 
 
-def calc_del(dis):
+def calc_marginal_models(dep, dis, p):
+    """
+    Calculate depth and distance marginals from full P-matrix taking the
+    irregular support points for depth and distance into account
+    :param dep: 1D array with depth support points
+    :param dis: 1D array with distance support points
+    :param p: 3D array with probabilities: (nmodels, ndepths, ndistances)
+    :return:
+    """
+    deldis = _calc_del(dis).reshape((1, 1, len(dis)))
+    deldep = _calc_del(dep).reshape((1, len(dep), 1))
+    p_models = np.sum(p * deldis * deldep, axis=(1, 2))
+
+    return p_models
+
+
+def _calc_del(dis):
     """
     Calculate vector of depth/distance step length
     :param dis: array of values

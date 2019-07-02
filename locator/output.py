@@ -7,7 +7,8 @@ from platform import uname
 import sys
 
 # let YAML output fit into a IEEE 754 single format float
-from locator.general_functions import _calc_marginals
+from locator.general_functions import calc_marginals_depdis, \
+    calc_marginal_models
 
 YAML_OUTPUT_SMALLEST_FLOAT_ABOVE_ZERO = 1.0e-37
 
@@ -36,7 +37,7 @@ def write_result(file_out, model_output, modelset_name,
                  p_threshold=1e-2):
 
     depth_mean, dist_mean, p_depdis, p_depth, p_dist = \
-        _calc_marginals(dep, dis, p)
+        calc_marginals_depdis(dep, dis, p)
 
     origin_pdf, origin_time_sum, time_bin_mid = calc_origin_time(p, t_ref, tt_P)
 
@@ -68,7 +69,6 @@ def write_result(file_out, model_output, modelset_name,
         uname_string = '\"%s\"' % sys.version.format('%s')
 
     # Write serialized YAML output for the GUI.
-    # TODO: Might be something wrong with the origin times
     with open(file_out, 'w') as f:
         _write_prob(f, pdf_depth_sum=pdf_depth_sum,
                    pdf_dist_sum=pdf_dist_sum)
@@ -82,12 +82,16 @@ def write_result(file_out, model_output, modelset_name,
                       system_configuration=uname_string)
 
     if model_output:
-        _write_model_misfits(p, origin_time_sum)
-        _write_weight_file(p, model_names=model_names,
+        p_model = calc_marginal_models(dep, dis, p)
+        p_model /= p_model.sum()
+        _write_model_misfits(p_model, origin_time_sum,
+                             prior_weight=weights / weights.sum())
+        _write_weight_file(p_model, model_names=model_names,
                            prior_weights=weights,
                            origin_time_sum=origin_time_sum)
 
-    _write_h5_output(p, modelset_name=modelset_name,
+    _write_h5_output(p,
+                     modelset_name=modelset_name,
                      depths=dep, distances=dis,
                      phase_list=phase_list,
                      tt_meas=tt_meas,
@@ -154,10 +158,10 @@ def _write_single(f, **kwargs):
             f.write('%s: %s\n\n' % (key, value))
 
 
-def _write_weight_file(p, model_names, prior_weights, origin_time_sum, weight_lim=1e-5):
+def _write_weight_file(p_model, model_names, prior_weights, origin_time_sum,
+                       weight_lim=1e-5):
     fnam = 'model_weights_%s.txt' % \
            (origin_time_sum.strftime(format='%y-%m-%dT%H%M'))
-    p_model = np.sum(p, axis=(1, 2))
     model_weights = p_model / np.max(p_model)
     with open(fnam, 'w') as fid:
         imodel = 0
@@ -170,17 +174,19 @@ def _write_weight_file(p, model_names, prior_weights, origin_time_sum, weight_li
                 fid.write('%s %5.2f\n' % (model_name, prior_weight))
 
 
-def _write_model_misfits(p, origin_time_sum):
+def _write_model_misfits(p_model, origin_time_sum, prior_weight):
     """
     Write probability for each model
     :type origin_time_sum: obspy.UTCDateTime
     """
     fnam = 'model_misfits_%s.txt' % \
         (origin_time_sum.strftime(format='%y-%m-%dT%H%M'))
-    p_model = np.sum(p, axis=(1, 2))
     with open(fnam, 'w') as f:
-        for imodel, model in enumerate(p_model):
-            f.write('%5d, %8.3e\n' % (imodel, model))
+        f.write('model ID,   prior,   posterior\n')
+        for imodel, (prior, post) in enumerate(zip(prior_weight, p_model)):
+            f.write('%8d, %8.6f, %10.8f\n' % (imodel,
+                                              prior,
+                                              post))
             # if model > 0.5:
             #     np.savetxt('model_%03d.txt' % imodel,
             #                np.asarray([f['mantle/radius'], f['mantle/vp'],
@@ -195,7 +201,7 @@ def _write_h5_output(p, modelset_name, depths, distances,
            (origin_time.strftime(format='%y-%m-%dT%H%M'))
 
     # Calculate model misfits
-    models_p = np.sum(p, axis=(1, 2))
+    models_p = calc_marginal_models(depths, distances, p)
     model_p_all = np.zeros(len(model_names))
     weight_bol = weights>1e-3
     model_p_all[weight_bol] = models_p
@@ -206,8 +212,10 @@ def _write_h5_output(p, modelset_name, depths, distances,
         f.create_dataset('modelset_name', data=modelset_name)
         f.create_dataset('depths', data=depths)
         f.create_dataset('distances', data=distances)
-        f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore") for n in phase_list])
-        f.create_dataset('model_names', data=[n.encode("utf-8", "ignore") for n in model_names])
+        f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore")
+                                             for n in phase_list])
+        f.create_dataset('model_names', data=[n.encode("utf-8", "ignore")
+                                              for n in model_names])
         f.create_dataset('weights', data=weights)
         f.create_dataset('sigma', data=sigma)
         f.create_dataset('tt_meas', data=tt_meas)

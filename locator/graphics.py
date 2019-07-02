@@ -7,7 +7,7 @@ import matplotlib
 from matplotlib import pyplot as plt
 from h5py import File
 
-from locator.general_functions import _calc_marginals
+from locator.general_functions import calc_marginals_depdis
 
 def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
                            xlabel=None, ylabel=None, xunit='', yunit='',
@@ -29,7 +29,7 @@ def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
 
     # # Calculate marginals and means
     mean_y, mean_x, marg_z, marg_y, marg_x = \
-        _calc_marginals(y, x, z)
+        calc_marginals_depdis(y, x, z)
 
     # normalize marginals (for plotting)
     marg_x /= np.nanmax(marg_x)
