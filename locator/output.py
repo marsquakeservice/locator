@@ -84,8 +84,9 @@ def write_result(file_out, model_output, modelset_name,
     if model_output:
         p_model = calc_marginal_models(dep, dis, p)
         p_model /= p_model.sum()
-        _write_model_misfits(p_model, origin_time_sum,
-                             prior_weight=weights / weights.sum())
+        _write_model_misfits(p_model, origin_time_sum=origin_time_sum,
+                             model_names=model_names[weights > 0],
+                             prior_weight=weights[weights > 0] / weights.sum())
         _write_weight_file(p_model, model_names=model_names,
                            prior_weights=weights,
                            origin_time_sum=origin_time_sum)
@@ -174,7 +175,7 @@ def _write_weight_file(p_model, model_names, prior_weights, origin_time_sum,
                 fid.write('%s %5.2f\n' % (model_name, prior_weight))
 
 
-def _write_model_misfits(p_model, origin_time_sum, prior_weight):
+def _write_model_misfits(p_model, model_names, origin_time_sum, prior_weight):
     """
     Write probability for each model
     :type origin_time_sum: obspy.UTCDateTime
@@ -182,11 +183,11 @@ def _write_model_misfits(p_model, origin_time_sum, prior_weight):
     fnam = 'model_misfits_%s.txt' % \
         (origin_time_sum.strftime(format='%y-%m-%dT%H%M'))
     with open(fnam, 'w') as f:
-        f.write('model ID,   prior,   posterior\n')
-        for imodel, (prior, post) in enumerate(zip(prior_weight, p_model)):
-            f.write('%8d, %8.6f, %10.8f\n' % (imodel,
-                                              prior,
-                                              post))
+        f.write('model ID,  model name,    prior,  posterior\n')
+        for imodel, (prior, post, name) in enumerate(
+                zip(prior_weight, p_model, model_names)):
+            f.write('%8d, %10s, %8.6f, %10.8f\n' %
+                    (imodel, name, prior, post))
             # if model > 0.5:
             #     np.savetxt('model_%03d.txt' % imodel,
             #                np.asarray([f['mantle/radius'], f['mantle/vp'],
