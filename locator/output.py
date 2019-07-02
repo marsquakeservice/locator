@@ -15,8 +15,8 @@ YAML_OUTPUT_SMALLEST_FLOAT_ABOVE_ZERO = 1.0e-37
 def calc_origin_time(p, t_ref, tt_P):
     # Calculate origin time PDF using weighted histogram over P travel
     # times. This works because code uses P-arrival as time 0 elsewhere
-    bol = p > 1e-3 * p.max(axis=None)
-    origin_min = int(min(-tt_P[bol])) - 10
+    bol = p > 1e-2 * p.max(axis=None)
+    origin_min = np.max((-1500, int(min(-tt_P[bol])) - 10))
     origin_max = int(max(-tt_P[bol])) + 10
     origin_pdf, origin_times = np.histogram(a=-tt_P.flatten(),
                                             weights=p.flatten(),
@@ -33,7 +33,7 @@ def write_result(file_out, model_output, modelset_name,
                  p, dep, dis, phase_list, tt_meas, sigma, freqs,
                  tt_P, t_ref, baz,
                  weights, model_names,
-                 p_threshold=1e-3):
+                 p_threshold=1e-2):
 
     depth_mean, dist_mean, p_depdis, p_depth, p_dist = \
         _calc_marginals(dep, dis, p)
