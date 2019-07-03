@@ -18,19 +18,22 @@ def define_arguments():
     parser.add_argument('ievent',
                         help='event number in surface wave traveltime file')
     parser.add_argument('depth', type=float,
-                       help='event depth in kilometer')
+                        help='event depth in kilometer')
+    helptext = "Create test for Travis CI (specific model suite etc)"
+    parser.add_argument('--travis', help=helptext,
+                        default=False, action='store_true')
     parser.add_argument('-p', '--phases', nargs='+', type=str,
                         default=['P', 'S'])
     return parser.parse_args()
 
 
-def create_input(phases, baz, outdir):
+def create_input(phases, baz, outdir, models="MQS_Ops.2019-01-03_250"):
     if outdir is not '.':
         makedirs(outdir)
     fnam = pjoin(outdir, 'locator_input.yml')
     print('Creating locator input file %s' % fnam)
     with open(fnam, 'w') as f:
-        f.write('velocity_model:             MQS_Ops.2019-01-03_250\n')
+        f.write('velocity_model:             %s\n' % models)
         f.write('velocity_model_uncertainty: 1.5\n')
         f.write('backazimuth:\n')
         f.write('    value: %5.1f\n' % baz)
@@ -77,7 +80,10 @@ def create_event(ievent, depth, phase_list, outdir='.'):
                          'sigma': 5.
                          }
                 phases.append(phase)
-    create_input(phases, baz, outdir)
+    if args.travis:
+        create_input(phases, baz, outdir, models='test_01')
+    else:
+        create_input(phases, baz, outdir)
     return dist
 
 

@@ -18,7 +18,7 @@ install:
 
 script:
   # Create test file
-  - python ./locator/tools/create_test.py 41 70
+  - python ./locator/tools/create_test.py 41 70 --travis
   - coverage run main.py locator_input.yml locator_test_41_70.yml --plot
   - python locator/test_h5_output.py locator_output_18-12-31T2359.h5 locator/data/tests/MQS.h5
   - ls
