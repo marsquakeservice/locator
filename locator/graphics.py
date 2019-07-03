@@ -164,9 +164,9 @@ def plot_model_density(p_model, prior, vp_all, vs_all):
     for a in ax:
         a[0].set_xlabel('Vp [m/s]')
         a[1].set_xlabel('Vs [m/s]')
-
+    plt.tight_layout()
     plt.savefig('vel_hist.pdf')
-    plt.show()
+    plt.close()
 
 
 def plot_models(p, files, tt_path):
