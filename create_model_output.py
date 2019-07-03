@@ -47,13 +47,12 @@ def main(input_file, output_path, model_path):
         read_model_list(fnam_models=fnam_models,
                         fnam_weights=fnam_weights)
 
-
     p_model = calc_marginal_models(dep=dep, dis=dis, p=p)
     p_model /= np.sum(p_model)
 
     write_models_to_disk(p_model=p_model,
                          files=filenames, tt_path=model_path,
-                         weights=weights_all,
+                         weights=weights,
                          model_names=model_names,
                          model_out_path=output_path)
 
