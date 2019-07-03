@@ -113,32 +113,58 @@ def plot(p, dis, dep, depth_prior=None, distance_prior=None):
 
 def plot_model_density(p_model, prior, vp_all, vs_all):
     from matplotlib.pyplot import hist
-    vp_min = 5.0e3
+    vp_min = 0.0e3
     vp_max = 9.0e3
-    vs_min = 2.5e3
+    vs_min = 0.0e3
     vs_max = 5.5e3
     # hist_post = np.histogram(a=vp_all, bins=100, range=(vp_min, vp_max),
     #                          weights=p_model)
     sp = vp_all.shape
     p_model_mat = p_model.reshape((sp[0], 1)).repeat(sp[ 1], axis=1)
-    nbins = 50
+    prior_mat = prior.reshape((sp[0], 1)).repeat(sp[ 1], axis=1)
+    nbins = 100
     vp_density, vp_bins, tmp = hist(vp_all, bins=nbins, range=(vp_min, vp_max),
-                               weights=p_model_mat)
+                                    weights=p_model_mat)
     plt.close()
     vs_density, vs_bins, tmp = hist(vs_all, bins=nbins, range=(vs_min, vs_max),
-                               weights=p_model_mat)
+                                    weights=p_model_mat)
     plt.close()
-    fig, ax = plt.subplots(1, 2, figsize=(10, 4))
-    ax[0].pcolormesh(np.linspace(vp_min, vp_max, nbins),
-                     np.arange(0, 400, 5),
+    vp_prior, vp_bins, tmp = hist(vp_all, bins=nbins, range=(vp_min, vp_max),
+                               weights=prior_mat)
+    plt.close()
+    vs_prior, vs_bins, tmp = hist(vs_all, bins=nbins, range=(vs_min, vs_max),
+                               weights=prior_mat)
+    plt.close()
+    fig, ax = plt.subplots(2, 2, figsize=(10, 8), sharey='all',
+                           sharex='col')
+    ax[0][0].set_title('P-wave velocity prior')
+    ax[0][1].set_title('S-wave velocity prior')
+    ax[1][0].set_title('P-wave velocity posterior')
+    ax[1][0].set_title('P-wave velocity posterior')
+
+    ax[0][0].pcolormesh(np.linspace(vp_min, vp_max, nbins),
+                        np.arange(0, 200, 5),
+                        np.asarray(vp_prior),
+                        vmin=0., cmap='BuGn')
+    ax[0][1].pcolormesh(np.linspace(vs_min, vs_max, nbins),
+                        np.arange(0, 200, 5),
+                        np.asarray(vs_prior),
+                        vmin=0., cmap='OrRd')
+    ax[1][0].pcolormesh(np.linspace(vp_min, vp_max, nbins),
+                     np.arange(0, 200, 5),
                      np.asarray(vp_density),
-                     vmin=0, vmax=0.5, cmap='BuGn')
-    ax[1].pcolormesh(np.linspace(vs_min, vs_max, nbins),
-                     np.arange(0, 400, 5),
+                     vmin=0., cmap='BuGn')
+    ax[1][1].pcolormesh(np.linspace(vs_min, vs_max, nbins),
+                     np.arange(0, 200, 5),
                      np.asarray(vs_density),
-                     vmin=0, vmax=0.5, cmap='BuGn')
+                     vmin=0., cmap='OrRd')
+    ax[0][0].set_ylim(200, 0)
+    ax[0][0].set_ylabel('depth [km]')
+
     for a in ax:
-        a.set_ylim(400, 0)
+        a[0].set_xlabel('Vp [m/s]')
+        a[1].set_xlabel('Vs [m/s]')
+
     plt.savefig('vel_hist.pdf')
     plt.show()
 

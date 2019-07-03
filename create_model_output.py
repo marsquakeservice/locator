@@ -59,7 +59,7 @@ def main(input_file, output_path, model_path):
                          model_out_path=output_path)
 
     plot_model_density(p_model=p_model,
-                       prior=weights,
+                       prior=weights[weights>1e-5],
                        vp_all=vp_all,
                        vs_all=vs_all)
 

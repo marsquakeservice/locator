@@ -245,7 +245,7 @@ def _write_axisem_file(h5_file, fnam_out):
 
 def write_models_to_disk(p_model, files, model_names, tt_path,
                          weights, model_out_path='./models_location'):
-    depths_target = np.arange(0.0, 400.0, 5.0)
+    depths_target = np.arange(0.0, 200.0, 5.0)
     vp_sums = np.zeros_like(depths_target)
     vp_sums2 = np.zeros_like(depths_target)
     vs_sums = np.zeros_like(depths_target)
