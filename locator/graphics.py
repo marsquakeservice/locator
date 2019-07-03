@@ -111,6 +111,38 @@ def plot(p, dis, dep, depth_prior=None, distance_prior=None):
     plt.close('all')
 
 
+def plot_model_density(p_model, prior, vp_all, vs_all):
+    from matplotlib.pyplot import hist
+    vp_min = 5.0e3
+    vp_max = 9.0e3
+    vs_min = 2.5e3
+    vs_max = 5.5e3
+    # hist_post = np.histogram(a=vp_all, bins=100, range=(vp_min, vp_max),
+    #                          weights=p_model)
+    sp = vp_all.shape
+    p_model_mat = p_model.reshape((sp[0], 1)).repeat(sp[ 1], axis=1)
+    nbins = 50
+    vp_density, vp_bins, tmp = hist(vp_all, bins=nbins, range=(vp_min, vp_max),
+                               weights=p_model_mat)
+    plt.close()
+    vs_density, vs_bins, tmp = hist(vs_all, bins=nbins, range=(vs_min, vs_max),
+                               weights=p_model_mat)
+    plt.close()
+    fig, ax = plt.subplots(1, 2, figsize=(10, 4))
+    ax[0].pcolormesh(np.linspace(vp_min, vp_max, nbins),
+                     np.arange(0, 400, 5),
+                     np.asarray(vp_density),
+                     vmin=0, vmax=0.5, cmap='BuGn')
+    ax[1].pcolormesh(np.linspace(vs_min, vs_max, nbins),
+                     np.arange(0, 400, 5),
+                     np.asarray(vs_density),
+                     vmin=0, vmax=0.5, cmap='BuGn')
+    for a in ax:
+        a.set_ylim(400, 0)
+    plt.savefig('vel_hist.pdf')
+    plt.show()
+
+
 def plot_models(p, files, tt_path):
     # Model likelihood plot
     models_p = np.sum(p, axis=(1, 2))

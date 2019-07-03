@@ -245,19 +245,22 @@ def _write_axisem_file(h5_file, fnam_out):
 
 def write_models_to_disk(p_model, files, model_names, tt_path,
                          weights, model_out_path='./models_location'):
-    depths_target = np.arange(0.0, 1000.0, 2.0)
+    depths_target = np.arange(0.0, 400.0, 5.0)
     vp_sums = np.zeros_like(depths_target)
     vp_sums2 = np.zeros_like(depths_target)
     vs_sums = np.zeros_like(depths_target)
     vs_sums2 = np.zeros_like(depths_target)
+    vp_all = np.zeros((p_model.shape[0], depths_target.shape[0]))
+    vs_all = np.zeros((p_model.shape[0], depths_target.shape[0]))
     nmodel = 0
 
     if not os.path.exists(model_out_path):
         mkdir(model_out_path)
 
     weight_bol = weights>1e-3
-    for fnam, model_p, model_name in zip(files, p_model,
-                                         model_names[weight_bol]):
+    for imodel, (fnam, model_p, model_name) in \
+            enumerate(zip(files, p_model, model_names[weight_bol])):
+
         with File(pjoin(tt_path, 'tt', fnam)) as f:
             fnam_out = pjoin(model_out_path, model_name)
             _write_axisem_file(h5_file=f, fnam_out=fnam_out)
@@ -277,12 +280,15 @@ def write_models_to_disk(p_model, files, model_names, tt_path,
             vs_sums += vs_ipl * model_p
             vs_sums2 += vs_ipl**2 * model_p
 
+            vp_all[imodel, :] = vp_ipl
+            vs_all[imodel, :] = vs_ipl
+
     fnam = pjoin(model_out_path, 'model_mean_sigma.txt')
-    vp_mean = vp_sums
-    vs_mean = vs_sums
-    vp_sigma = np.sqrt(vp_sums2 - vp_mean**2)
-    vs_sigma = np.sqrt(vs_sums2 - vs_mean**2)
     with open(fnam, 'w') as f:
+        vp_mean = vp_sums
+        vs_mean = vs_sums
+        vp_sigma = np.sqrt(vp_sums2 - vp_mean**2)
+        vs_sigma = np.sqrt(vs_sums2 - vs_mean**2)
         f.write('%6s, %8s, %8s, %8s, %8s\n' %
                 ('depth', 'vp_mean', 'vp_sig', 'vs_mean', 'vs_sig'))
         for idepth in range(0, len(depths_target)):
@@ -302,3 +308,4 @@ def write_models_to_disk(p_model, files, model_names, tt_path,
                       fnam_out=fnam_weight_out,
                       prior_weights=weights)
 
+    return vp_all, vs_all

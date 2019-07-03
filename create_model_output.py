@@ -14,6 +14,7 @@ from argparse import ArgumentParser
 from locator.general_functions import calc_marginal_models
 from locator.input import read_h5_locator_output, read_model_list
 from locator.output import write_models_to_disk, write_weight_file
+from locator.graphics import plot_model_density
 
 def define_arguments():
     helptext = 'Create model output files based on previous locator run'
@@ -50,12 +51,17 @@ def main(input_file, output_path, model_path):
     p_model = calc_marginal_models(dep=dep, dis=dis, p=p)
     p_model /= np.sum(p_model)
 
-    write_models_to_disk(p_model=p_model,
+
+    vp_all, vs_all = write_models_to_disk(p_model=p_model,
                          files=filenames, tt_path=model_path,
                          weights=weights,
                          model_names=model_names,
                          model_out_path=output_path)
 
+    plot_model_density(p_model=p_model,
+                       prior=weights,
+                       vp_all=vp_all,
+                       vs_all=vs_all)
 
 if __name__ == '__main__':
     args = define_arguments()
