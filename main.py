@@ -57,7 +57,7 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
          model_output, max_depth, use_distance_prior):
     input = read_input(input_file)
 
-    tt_path = os.path.join(os.environ['SINGLESTATION'], 
+    tt_path = os.path.join(os.environ['SINGLESTATION'],
                            'data', 'bodywave',
                            input['model_name'])
     if not model_path:
@@ -103,10 +103,6 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                     input['freqs'], input['tt_meas'],
                     input['sigma'])
         plot_models(p, files, tt_path)
-        write_models_to_disk(p, depths=dep, distances=dis,
-                             files=files, tt_path=tt_path,
-                             weights=weights_all,
-                             model_names=models_all)
     write_result(file_out=output_file,
                  model_output=model_output,
                  modelset_name=input['model_name'],

@@ -136,3 +136,35 @@ def serialize_phases(phases):
     tt_meas -= tt_ref
 
     return phase_list, tt_meas, sigma, freqs, iref, tt_ref
+
+
+def read_h5_locator_output(fnam):
+    """
+    Read model specific part of locator output file
+    :param fnam: file name of HDF5 file
+    :return: p: probability matrix
+             dis: distance support points
+             dep: depth support points
+             weights: a priori weights
+    """
+    with File(fnam, 'r') as f:
+        p = np.asarray(f['p'].value)
+        dis = np.asarray(f['distances'].value)
+        dep = np.asarray(f['depths'].value)
+        weights = np.asarray(f['weights'].value)
+        model_names = f['model_names']
+        modelset_name = '%s' % f['modelset_name'].value
+
+        # f.create_dataset('modelset_name', data=modelset_name)
+        # f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore")
+        #                                      for n in phase_list])
+        # f.create_dataset('model_names', data=[n.encode("utf-8", "ignore")
+        #                                       for n in model_names])
+        # f.create_dataset('weights', data=weights)
+        # f.create_dataset('sigma', data=sigma)
+        # f.create_dataset('tt_meas', data=tt_meas)
+        # f.create_dataset('freqs', data=freqs)
+        # f.create_dataset('t_ref', data=t_ref)
+        # f.create_dataset('backazimuth', data=baz)
+        # f.create_dataset('origin_time', data=float(origin_time))
+    return p, dep, dis, weights, modelset_name, model_names
