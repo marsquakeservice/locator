@@ -266,7 +266,7 @@ def write_models_to_disk(p, depths, distances, files, model_names, tt_path,
     p_model = calc_marginal_models(dep=depths, dis=distances, p=p)
     p_model /= np.sum(p_model)
     nmodel = 0
-    mkdir(model_out_path, exist_ok=True)
+    mkdir(model_out_path)
 
     for fnam, model_p, model_name in zip(files, p_model, model_names):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
