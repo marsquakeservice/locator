@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+
+from os.path import join as pjoin, split as psplit
+from os import makedirs as mkdir
+
 import numpy as np
 from h5py import File
 from obspy import UTCDateTime
@@ -77,7 +81,10 @@ def write_result(file_out, model_output, modelset_name,
                        ddscore=ddscore)
 
         _write_single(f, depth_sum=depth_mean, distance_sum=dist_mean,
-                      depth_phase_count=int('pP' in phase_list),
+                      depth_phase_count=int('pP' in phase_list) +
+                                        int('sP' in phase_list) +
+                                        int('pS' in phase_list) +
+                                        int('sS' in phase_list),
                       origin_time_sum=origin_time_sum,
                       system_configuration=uname_string)
 
@@ -224,3 +231,71 @@ def _write_h5_output(p, modelset_name, depths, distances,
         f.create_dataset('t_ref', data=t_ref)
         f.create_dataset('backazimuth', data=baz)
         f.create_dataset('origin_time', data=float(origin_time))
+
+
+def _write_axisem_file(h5_file, fnam_out):
+    line_fmt = '      %8.0f %8.2f %8.2f %8.2f %9.1f %9.1f %8.2f %8.2f 1.0\n'
+    with open(fnam_out, 'w') as f:
+        name = psplit(('%s' % h5_file['model_name'].value))[-1]
+        f.write('NAME            %s\n' % (name))
+        f.write('ANELASTIC     true\n')
+        f.write('ANISOTROPIC  false\n')
+        f.write('UNITS            m\n')
+        f.write('COLUMNS radius      rho      vpv      vsv       qmu       '
+                'qka      vph      vsh eta\n')
+        for ilayer in range(0, len(h5_file['mantle/vp'].value)):
+            f.write(line_fmt % (
+                h5_file['mantle/radius'][ilayer],
+                h5_file['mantle/rho'][ilayer],
+                h5_file['mantle/vp'][ilayer],
+                h5_file['mantle/vs'][ilayer],
+                h5_file['mantle/qmu'][ilayer],
+                h5_file['mantle/qka'][ilayer],
+                h5_file['mantle/vp'][ilayer],
+                h5_file['mantle/vs'][ilayer]) )
+
+
+def write_models_to_disk(p, depths, distances, files, model_names, tt_path,
+                         model_out_path='./models_location'):
+    depths_target = np.arange(0.0, 1000.0, 2.0)
+    vp_sums = np.zeros_like(depths_target)
+    vp_sums2 = np.zeros_like(depths_target)
+    vs_sums = np.zeros_like(depths_target)
+    vs_sums2 = np.zeros_like(depths_target)
+    p_model = calc_marginal_models(dep=depths, dis=distances, p=p)
+    p_model /= np.sum(p_model)
+    nmodel = 0
+    mkdir(model_out_path, exist_ok=True)
+
+    for fnam, model_p, model_name in zip(files, p_model, model_names):
+        with File(pjoin(tt_path, 'tt', fnam)) as f:
+            fnam_out = pjoin(model_out_path, model_name)
+            _write_axisem_file(h5_file=f, fnam_out=fnam_out)
+
+            nmodel += 1
+            radius = np.asarray(f['mantle/radius'])
+            depths = (max(radius) - radius) * 1e-3
+
+            vp_ipl = np.interp(xp=depths[::-1],
+                               fp=f['mantle/vp'].value[::-1],
+                               x=depths_target)
+            vs_ipl = np.interp(xp=depths[::-1],
+                               fp=f['mantle/vs'].value[::-1],
+                               x=depths_target)
+            vp_sums += vp_ipl * model_p
+            vp_sums2 += vp_ipl**2 * model_p
+            vs_sums += vs_ipl * model_p
+            vs_sums2 += vs_ipl**2 * model_p
+    fnam = 'model_mean_sigma.txt'
+    vp_mean = vp_sums
+    vs_mean = vs_sums
+    vp_sigma = np.sqrt(vp_sums2 - vp_mean**2)
+    vs_sigma = np.sqrt(vs_sums2 - vs_mean**2)
+    with open(fnam, 'w') as f:
+        f.write('%6s, %8s, %8s, %8s, %8s\n' %
+                ('depth', 'vp_mean', 'vp_sig', 'vs_mean', 'vs_sig'))
+        for idepth in range(0, len(depths_target)):
+            f.write('%6.1f, %8.2f, %8.2f, %8.2f, %8.2f\n' %
+                    (depths_target[idepth],
+                     vp_mean[idepth], vp_sigma[idepth],
+                     vs_mean[idepth], vs_sigma[idepth]))

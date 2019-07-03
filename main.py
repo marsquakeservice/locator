@@ -3,9 +3,9 @@
 """
 
 """
-from locator.graphics import plot_phases, plot, plot_models, _write_model_density
+from locator.graphics import plot_phases, plot, plot_models
 from locator.misfits import calc_p
-from locator.output import write_result
+from locator.output import write_result, write_models_to_disk
 from locator.input import load_tt, read_model_list, read_input
 
 __author__ = "Simon Stähler"
@@ -103,7 +103,9 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                     input['freqs'], input['tt_meas'],
                     input['sigma'])
         plot_models(p, files, tt_path)
-        _write_model_density(p, files, tt_path)
+        write_models_to_disk(p, depths=dep, distances=dis,
+                             files=files, tt_path=tt_path,
+                             model_names=models_all)
     write_result(file_out=output_file,
                  model_output=model_output,
                  modelset_name=input['model_name'],
