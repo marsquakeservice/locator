@@ -1,8 +1,14 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 from os.path import join as pjoin
+from os import environ
 
-#matplotlib.use('Agg')
+try:
+    environ['DISPLAY']
+except KeyError:
+    import matplotlib
+    matplotlib.use('Agg')
+
 from matplotlib import pyplot as plt
 from h5py import File
 
