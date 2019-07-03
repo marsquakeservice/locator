@@ -105,6 +105,7 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
         plot_models(p, files, tt_path)
         write_models_to_disk(p, depths=dep, distances=dis,
                              files=files, tt_path=tt_path,
+                             weights=weights_all,
                              model_names=models_all)
     write_result(file_out=output_file,
                  model_output=model_output,

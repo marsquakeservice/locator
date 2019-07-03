@@ -257,7 +257,7 @@ def _write_axisem_file(h5_file, fnam_out):
 
 
 def write_models_to_disk(p, depths, distances, files, model_names, tt_path,
-                         model_out_path='./models_location'):
+                         weights, model_out_path='./models_location'):
     depths_target = np.arange(0.0, 1000.0, 2.0)
     vp_sums = np.zeros_like(depths_target)
     vp_sums2 = np.zeros_like(depths_target)
@@ -268,7 +268,9 @@ def write_models_to_disk(p, depths, distances, files, model_names, tt_path,
     nmodel = 0
     mkdir(model_out_path)
 
-    for fnam, model_p, model_name in zip(files, p_model, model_names):
+    weight_bol = weights>1e-3
+    for fnam, model_p, model_name in zip(files, p_model,
+                                         model_names[weight_bol]):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
             fnam_out = pjoin(model_out_path, model_name)
             _write_axisem_file(h5_file=f, fnam_out=fnam_out)
