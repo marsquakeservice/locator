@@ -3,6 +3,7 @@ from __future__ import print_function
 
 from os.path import join as pjoin, split as psplit
 from os import makedirs as mkdir
+import os
 
 import numpy as np
 from h5py import File
@@ -257,7 +258,7 @@ def _write_axisem_file(h5_file, fnam_out):
 
 
 def write_models_to_disk(p, depths, distances, files, model_names, tt_path,
-                         model_out_path='./models_location'):
+                         weights, model_out_path='./models_location'):
     depths_target = np.arange(0.0, 1000.0, 2.0)
     vp_sums = np.zeros_like(depths_target)
     vp_sums2 = np.zeros_like(depths_target)
@@ -266,9 +267,13 @@ def write_models_to_disk(p, depths, distances, files, model_names, tt_path,
     p_model = calc_marginal_models(dep=depths, dis=distances, p=p)
     p_model /= np.sum(p_model)
     nmodel = 0
-    mkdir(model_out_path)
 
-    for fnam, model_p, model_name in zip(files, p_model, model_names):
+    if not os.path.exists(model_out_path):
+        mkdir(model_out_path)
+
+    weight_bol = weights>1e-3
+    for fnam, model_p, model_name in zip(files, p_model,
+                                         model_names[weight_bol]):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
             fnam_out = pjoin(model_out_path, model_name)
             _write_axisem_file(h5_file=f, fnam_out=fnam_out)
