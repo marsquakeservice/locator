@@ -11,8 +11,9 @@ import numpy as np
 import os
 from argparse import ArgumentParser
 
+from locator.general_functions import calc_marginal_models
 from locator.input import read_h5_locator_output, read_model_list
-from locator.output import write_models_to_disk, write_model_misfits
+from locator.output import write_models_to_disk, write_weight_file
 
 def define_arguments():
     helptext = 'Create model output files based on previous locator run'
@@ -47,7 +48,10 @@ def main(input_file, output_path, model_path):
                         fnam_weights=fnam_weights)
 
 
-    write_models_to_disk(p, depths=dep, distances=dis,
+    p_model = calc_marginal_models(dep=dep, dis=dis, p=p)
+    p_model /= np.sum(p_model)
+
+    write_models_to_disk(p_model=p_model,
                          files=filenames, tt_path=model_path,
                          weights=weights_all,
                          model_names=model_names,

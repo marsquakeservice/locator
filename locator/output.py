@@ -94,12 +94,6 @@ def write_result(file_out, model_output, modelset_name,
         p_model /= p_model.sum()
         fnam = 'model_misfits_%s.txt' % \
                (origin_time_sum.strftime(format='%y-%m-%dT%H%M'))
-        write_model_misfits(p_model, fnam_out=fnam,
-                            model_names=model_names[weights > 0],
-                            prior_weight=weights[weights > 0] / weights.sum())
-        _write_weight_file(p_model, model_names=model_names,
-                           prior_weights=weights,
-                           origin_time_sum=origin_time_sum)
 
     _write_h5_output(p,
                      modelset_name=modelset_name,
@@ -169,12 +163,10 @@ def _write_single(f, **kwargs):
             f.write('%s: %s\n\n' % (key, value))
 
 
-def _write_weight_file(p_model, model_names, prior_weights, origin_time_sum,
-                       weight_lim=1e-5, model_out_path='./models_location'):
-    fnam = 'model_weights_%s.txt' % \
-           (origin_time_sum.strftime(format='%y-%m-%dT%H%M'))
+def write_weight_file(p_model, model_names, prior_weights, fnam_out,
+                      weight_lim=1e-5):
     model_weights = p_model / np.max(p_model)
-    with open(pjoin(model_out_path, fnam), 'w') as fid:
+    with open(fnam_out, 'w') as fid:
         imodel = 0
         for model_name, prior_weight in zip(model_names, prior_weights):
             if prior_weight > weight_lim:
@@ -186,16 +178,14 @@ def _write_weight_file(p_model, model_names, prior_weights, origin_time_sum,
 
 
 def write_model_misfits(p_model, model_names, fnam_out,
-                        prior_weight,
-                        model_out_path='./models_location'):
+                        prior_weights):
     """
     Write probability for each model
-    :type origin_time_sum: obspy.UTCDateTime
     """
-    with open(pjoin(model_out_path, fnam_out), 'w') as f:
+    with open(fnam_out, 'w') as f:
         f.write('model ID,  model name,    prior,  posterior\n')
         for imodel, (prior, post, name) in enumerate(
-                zip(prior_weight, p_model, model_names)):
+                zip(prior_weights, p_model, model_names)):
             f.write('%8d, %10s, %8.6f, %10.8f\n' %
                     (imodel, name, prior, post))
 
@@ -253,15 +243,13 @@ def _write_axisem_file(h5_file, fnam_out):
                 h5_file['mantle/vs'][ilayer]) )
 
 
-def write_models_to_disk(p, depths, distances, files, model_names, tt_path,
+def write_models_to_disk(p_model, files, model_names, tt_path,
                          weights, model_out_path='./models_location'):
     depths_target = np.arange(0.0, 1000.0, 2.0)
     vp_sums = np.zeros_like(depths_target)
     vp_sums2 = np.zeros_like(depths_target)
     vs_sums = np.zeros_like(depths_target)
     vs_sums2 = np.zeros_like(depths_target)
-    p_model = calc_marginal_models(dep=depths, dis=distances, p=p)
-    p_model /= np.sum(p_model)
     nmodel = 0
 
     if not os.path.exists(model_out_path):
@@ -303,9 +291,14 @@ def write_models_to_disk(p, depths, distances, files, model_names, tt_path,
                      vp_mean[idepth], vp_sigma[idepth],
                      vs_mean[idepth], vs_sigma[idepth]))
 
-    fnam_weight_out = 'model_weights_update.txt'
-    write_model_misfits(p_model, fnam_out=fnam_weight_out,
-                        model_out_path=model_out_path,
+    fnam_pp_out = pjoin(model_out_path, 'model_prior_post.txt')
+    write_model_misfits(p_model, fnam_out=fnam_pp_out,
                         model_names=model_names[weight_bol],
-                        prior_weight=weights[weight_bol] / weights.sum())
+                        prior_weights=weights[weight_bol] / weights.sum())
+
+    fnam_weight_out = pjoin(model_out_path, 'model_weights_new.txt')
+
+    write_weight_file(p_model, model_names=model_names,
+                      fnam_out=fnam_weight_out,
+                      prior_weights=weights)
 
