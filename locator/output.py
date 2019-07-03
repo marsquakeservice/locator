@@ -167,11 +167,11 @@ def _write_single(f, **kwargs):
 
 
 def _write_weight_file(p_model, model_names, prior_weights, origin_time_sum,
-                       weight_lim=1e-5):
+                       weight_lim=1e-5, model_out_path='./models_location'):
     fnam = 'model_weights_%s.txt' % \
            (origin_time_sum.strftime(format='%y-%m-%dT%H%M'))
     model_weights = p_model / np.max(p_model)
-    with open(fnam, 'w') as fid:
+    with open(pjoin(model_out_path, fnam), 'w') as fid:
         imodel = 0
         for model_name, prior_weight in zip(model_names, prior_weights):
             if prior_weight > weight_lim:
@@ -182,14 +182,15 @@ def _write_weight_file(p_model, model_names, prior_weights, origin_time_sum,
                 fid.write('%s %5.2f\n' % (model_name, prior_weight))
 
 
-def _write_model_misfits(p_model, model_names, origin_time_sum, prior_weight):
+def _write_model_misfits(p_model, model_names, origin_time_sum, prior_weight,
+                         model_out_path='./models_location'):
     """
     Write probability for each model
     :type origin_time_sum: obspy.UTCDateTime
     """
     fnam = 'model_misfits_%s.txt' % \
         (origin_time_sum.strftime(format='%y-%m-%dT%H%M'))
-    with open(fnam, 'w') as f:
+    with open(pjoin(model_out_path, fnam), 'w') as f:
         f.write('model ID,  model name,    prior,  posterior\n')
         for imodel, (prior, post, name) in enumerate(
                 zip(prior_weight, p_model, model_names)):
