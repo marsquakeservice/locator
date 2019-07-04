@@ -279,9 +279,9 @@ def write_models_to_disk(p_model, files, model_names, tt_path,
             vp_sums2 += vp_ipl**2 * model_p
             vs_sums += vs_ipl * model_p
             vs_sums2 += vs_ipl**2 * model_p
-
-            vp_all[imodel, :] = vp_ipl
-            vs_all[imodel, :] = vs_ipl
+            if not fnam[0] == 'C':
+                vp_all[imodel, :] = vp_ipl
+                vs_all[imodel, :] = vs_ipl
 
     fnam = pjoin(model_out_path, 'model_mean_sigma.txt')
     with open(fnam, 'w') as f:

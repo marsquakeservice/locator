@@ -113,9 +113,9 @@ def plot(p, dis, dep, depth_prior=None, distance_prior=None):
 
 def plot_model_density(p_model, prior, vp_all, vs_all):
     from matplotlib.pyplot import hist
-    vp_min = 0.0e3
+    vp_min = 0.2e3
     vp_max = 9.0e3
-    vs_min = 0.0e3
+    vs_min = 0.2e3
     vs_max = 5.5e3
     # hist_post = np.histogram(a=vp_all, bins=100, range=(vp_min, vp_max),
     #                          weights=p_model)
@@ -149,7 +149,7 @@ def plot_model_density(p_model, prior, vp_all, vs_all):
     ax[0][1].pcolormesh(np.linspace(vs_min, vs_max, nbins),
                         np.arange(0, 200, 5),
                         np.asarray(vs_prior),
-                        vmin=0., cmap='OrRd')
+                        vmin=0., cmap='afmhot_r')
     ax[1][0].pcolormesh(np.linspace(vp_min, vp_max, nbins),
                      np.arange(0, 200, 5),
                      np.asarray(vp_density),
@@ -157,7 +157,7 @@ def plot_model_density(p_model, prior, vp_all, vs_all):
     ax[1][1].pcolormesh(np.linspace(vs_min, vs_max, nbins),
                      np.arange(0, 200, 5),
                      np.asarray(vs_density),
-                     vmin=0., cmap='OrRd')
+                     vmin=0., cmap='afmhot_r')
     ax[0][0].set_ylim(200, 0)
     ax[0][0].set_ylabel('depth [km]')
 
