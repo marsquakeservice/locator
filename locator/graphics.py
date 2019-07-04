@@ -117,8 +117,6 @@ def plot_model_density(p_model, prior, vp_all, vs_all):
     vp_max = 9.0e3
     vs_min = 0.2e3
     vs_max = 5.5e3
-    # hist_post = np.histogram(a=vp_all, bins=100, range=(vp_min, vp_max),
-    #                          weights=p_model)
     sp = vp_all.shape
     p_model_mat = p_model.reshape((sp[0], 1)).repeat(sp[ 1], axis=1)
     prior_mat = prior.reshape((sp[0], 1)).repeat(sp[ 1], axis=1)
@@ -142,22 +140,23 @@ def plot_model_density(p_model, prior, vp_all, vs_all):
     ax[1][0].set_title('P-wave velocity posterior')
     ax[1][0].set_title('P-wave velocity posterior')
 
+    depths = np.arange(0, 200, 5)
     ax[0][0].pcolormesh(np.linspace(vp_min, vp_max, nbins),
-                        np.arange(0, 200, 5),
+                        depths,
                         np.asarray(vp_prior),
                         vmin=0., cmap='BuGn')
     ax[0][1].pcolormesh(np.linspace(vs_min, vs_max, nbins),
-                        np.arange(0, 200, 5),
+                        depths,
                         np.asarray(vs_prior),
                         vmin=0., cmap='afmhot_r')
     ax[1][0].pcolormesh(np.linspace(vp_min, vp_max, nbins),
-                     np.arange(0, 200, 5),
-                     np.asarray(vp_density),
-                     vmin=0., cmap='BuGn')
+                        depths,
+                        np.asarray(vp_density),
+                        vmin=0., cmap='BuGn')
     ax[1][1].pcolormesh(np.linspace(vs_min, vs_max, nbins),
-                     np.arange(0, 200, 5),
-                     np.asarray(vs_density),
-                     vmin=0., cmap='afmhot_r')
+                        depths,
+                        np.asarray(vs_density),
+                        vmin=0., cmap='afmhot_r')
     ax[0][0].set_ylim(200, 0)
     ax[0][0].set_ylabel('depth [km]')
 
@@ -167,6 +166,8 @@ def plot_model_density(p_model, prior, vp_all, vs_all):
     plt.tight_layout()
     plt.savefig('vel_hist.pdf')
     plt.close()
+
+    return vp_prior, vp_density, vs_prior, vs_density, depths, vp_bins, vs_bins
 
 
 def plot_models(p, files, tt_path):

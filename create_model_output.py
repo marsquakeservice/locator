@@ -58,10 +58,23 @@ def main(input_file, output_path, model_path):
                          model_names=model_names,
                          model_out_path=output_path)
 
-    plot_model_density(p_model=p_model,
-                       prior=weights[weights>1e-5],
-                       vp_all=vp_all,
-                       vs_all=vs_all)
+    vp_pri, vp_pos, vs_pri, vs_pos, depths, vp_bin, vs_bin = \
+        plot_model_density(p_model=p_model,
+                           prior=weights[weights>1e-5],
+                           vp_all=vp_all,
+                           vs_all=vs_all)
+
+    for var, fnam in zip((vp_pri, vp_pos, vs_pri, vs_pos,
+                          depths, vp_bin, vs_bin),
+                         ('model_vp_prior.txt',
+                          'model_vp_posterior.txt',
+                          'model_vs_prior.txt',
+                          'model_vs_posterior.txt',
+                          'model_depth_bins.txt',
+                          'model_vp_bins.txt',
+                          'model_vs_bins.txt'
+                          )):
+        np.savetxt(fname=os.path.join(output_path, fnam), X=var, fmt='%10.4e')
 
 if __name__ == '__main__':
     args = define_arguments()
