@@ -12,7 +12,8 @@ except KeyError:
 from matplotlib import pyplot as plt
 from h5py import File
 
-from locator.general_functions import calc_marginals_depdis
+from locator.general_functions import calc_marginals_depdis, \
+    calc_marginal_models
 
 def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
                            xlabel=None, ylabel=None, xunit='', yunit='',
@@ -170,18 +171,21 @@ def plot_model_density(p_model, prior, vp_all, vs_all):
     return vp_prior, vp_density, vs_prior, vs_density, depths, vp_bins, vs_bins
 
 
-def plot_models(p, files, tt_path):
+def plot_models(p, dep, dis, weights, files, tt_path):
     # Model likelihood plot
-    models_p = np.sum(p, axis=(1, 2))
-    plt.plot(models_p, '.')
-    plt.xlabel('Model index')
-    plt.ylabel('likelihood')
+    models_p = calc_marginal_models(p=p, dep=dep, dis=dis)
+    models_p /= models_p.max()
+    fig, ax = plt.subplots(2, 1, sharex='all', sharey='all')
+    ax[0].plot(weights, '.')
+    ax[1].plot(models_p, '.')
+    ax[1].set_xlabel('Model index')
+    ax[0].set_ylabel('Prior weight')
+    ax[1].set_ylabel('Posterior probability')
     plt.tight_layout()
     plt.savefig('model_likelihood.png')
     plt.close('all')
 
     # Plot with all mantle profiles
-    models_p /= max(models_p)
     fig, ax = plt.subplots(2, 2, figsize=(10, 9))
     for fnam, model_p in zip(files, models_p):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
