@@ -25,6 +25,34 @@ def read_model_list(fnam_models, fnam_weights, weight_lim=1e-5):
     return fnams[weights>weight_lim], weights[weights>weight_lim], modelnames, weights
 
 
+def load_slowness(files, tt_path, phase_list):
+
+    # Get dimension of TT variable (i.e. number of depths and distances)
+    with File(pjoin(tt_path, 'tt', files[0])) as f:
+        tts = f['/body_waves/times']
+        ndepth, ndist, nphase = tts.shape
+        phase_names = f['/body_waves/phase_names'].value.tolist()
+        depths = f['/body_waves/depths'].value
+        distances = f['/body_waves/distances'].value
+
+    slowness = np.zeros((len(files), ndepth, ndist,
+                         len(phase_list)), dtype='float32')
+
+    for ifile, file in enumerate(files):
+        with File(pjoin(tt_path, 'tt', file)) as f:
+            for iphase, phase in enumerate(phase_list):
+                # Is it a body wave?
+                if phase.encode() in phase_names:
+                    idx = phase_names.index(phase.encode())
+                    slowness[ifile, :, :, iphase] = \
+                        f['/body_waves/slowness'][:, :, idx]
+
+    # -1 is the value for no arrival at this distance/model/depth combo
+    slowness[slowness < 1e-9] = -1
+
+    return slowness
+
+
 def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
 
     # Get dimension of TT variable (i.e. number of depths and distances)
