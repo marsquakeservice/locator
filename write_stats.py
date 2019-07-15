@@ -57,7 +57,7 @@ def write_variable(var, p, fnam, p_thresh = 1e-5,
 def main(args):
     fnam_locatoroutput = args.locator_output
     H5 = load_H5(fnam_locatoroutput)
-    phase_list = ['P', 'S']
+    phase_list = ['P', 'S', 'pP']
     tt_path = pjoin(env['SINGLESTATION'],
                     'data', 'bodywave',
                     H5['model_name'])
@@ -81,6 +81,8 @@ def main(args):
 
     write_variable(var = tt[:,:,:,1] - tt[:,:,:,0],
                    p=H5['p'], fnam='tS_tP_diff.txt')
+    write_variable(var = tt[:,:,:,2] - tt[:,:,:,0],
+                   p=H5['p'], fnam='tpP_tP_diff.txt')
     for i in range(0, slowness.shape[3]):
         write_variable(var = np.deg2rad(slowness[:,:,:,i]),
                        p=H5['p'],
