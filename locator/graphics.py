@@ -187,6 +187,11 @@ def plot_models(p, dep, dis, weights, files, tt_path):
 
     # Plot with all mantle profiles
     fig, ax = plt.subplots(2, 2, figsize=(10, 9))
+    axins = ax.copy()
+
+    for ix in range(0, 2):
+        for iy in range(0, 2):
+            axins[ix, iy] = ax[ix, iy].inset_axes([0.10, 0.10, 0.4, 0.4])
     for fnam, model_p in zip(files, models_p):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
             radius = np.asarray(f['mantle/radius'])
@@ -201,40 +206,52 @@ def plot_models(p, dep, dis, weights, files, tt_path):
             #    ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
             #                  alpha=model_p**2, zorder=20)
             if not fnam[0] == 'C':
-                lp, = ax[0][0].plot(f['mantle/vp'], radius, c='lightgrey',
-                                    lw=0.5, alpha=0.4, zorder=2)
-                ls, = ax[0][0].plot(f['mantle/vs'], radius, c='darkred',
-                                    lw=0.5, alpha=0.4, zorder=2)
-                if model_p > 0.3:
-                    lp, = ax[0][1].plot(f['mantle/vp'], radius, c='darkblue',
-                                        lw=0.5, alpha=model_p ** 2, zorder=20)
-                    ls, = ax[0][1].plot(f['mantle/vs'], radius, c='darkred',
-                                        lw=0.5, alpha=model_p ** 2, zorder=20)
-                if model_p > 0.3:
-                    lp, = ax[1][1].plot(f['mantle/vs'] - f['mantle/vs'][-7],
-                                        radius, c='darkred', lw=0.5,
-                                        alpha=model_p ** 2, zorder=20)
-                lp, = ax[1][0].plot(f['mantle/vs'] - f['mantle/vs'][-7],
-                                    radius, c='darkred', lw=0.5,
-                                    alpha=0.4, zorder=2)
+                for a in (ax, axins):
+                    lp, = a[0][0].plot(f['mantle/vp'], radius, c='lightgrey',
+                                        lw=0.5, alpha=0.4, zorder=2)
+                    ls, = a[0][0].plot(f['mantle/vs'], radius, c='darkred',
+                                        lw=0.5, alpha=0.4, zorder=2)
+                    if model_p > 0.3:
+                        lp, = a[1][1].plot(f['mantle/vp'], radius, c='darkblue',
+                                           lw=0.5, alpha=model_p ** 2, zorder=20)
+                        ls, = a[0][1].plot(f['mantle/vs'], radius, c='darkred',
+                                           lw=0.5, alpha=model_p ** 2, zorder=20)
+                        # lp, = ax[1][1].plot(f['mantle/vs'] - f['mantle/vs'][-7],
+                        #                     radius, c='darkred', lw=0.5,
+                        #                     alpha=model_p ** 2, zorder=20)
+                    lp, = a[1][0].plot(f['mantle/vp'],
+                                        radius, c='darkblue', lw=0.5,
+                                        alpha=0.4, zorder=2)
 
     for a in ax.flatten():
         a.set_ylim(600, 0)
-    ax[0][0].set_xlim(3300, 4700)
-    ax[0][1].set_xlim(3300, 4700)
+    vsmin = 3000
+    vpmin = 3000 * np.sqrt(3)
+    axins[0][0].set_xlim(vsmin*0.9, vsmin*1.4)
+    axins[0][1].set_xlim(vsmin*0.9, vsmin*1.4)
+    axins[1][0].set_xlim(vpmin*0.9, vpmin*1.4)
+    axins[1][1].set_xlim(vpmin*0.9, vpmin*1.4)
+    axins[0][0].set_ylim(100, 0)
+    axins[0][1].set_ylim(100, 0)
+    axins[1][0].set_ylim(100, 0)
+    axins[1][1].set_ylim(100, 0)
+    ax[0][0].set_xlim(vsmin, vsmin * 1.7)
+    ax[0][1].set_xlim(vsmin, vsmin * 1.7)
     # ax[0][1].legend((lp, ls), ('vp', 'vs'))
-    ax[1][0].set_xlim(-1000, 400)
-    ax[1][1].set_xlim(-1000, 400)
+    ax[1][0].set_xlim(vpmin, vpmin * 1.7)
+    ax[1][1].set_xlim(vpmin, vpmin * 1.7)
     # ax[1][1].legend((lp, ls), ('vp', 'vs'))
     ax[0][0].set_title('V_S, all models')
     ax[0][1].set_title('V_S, allowed models')
-    ax[1][0].set_title('V_S - V_S (low crust), all models')
-    ax[1][1].set_title('V_S - V_S (low crust), allowed models')
+    ax[1][0].set_title('V_P, all models')
+    ax[1][1].set_title('V_P, allowed models')
     for a in ax[0]:
         a.set_xlabel('velocity, S-waves [m/s]')
         a.set_ylabel('depth [km]')
+                              #100, vsmin * 1.2])
+
     for a in ax[1]:
-        a.set_xlabel('reduced velocity, S-waves [m/s]')
+        a.set_xlabel('velocity, P-waves [m/s]')
         a.set_ylabel('depth [km]')
     plt.tight_layout()
     plt.savefig('velocity_models.png', dpi=200)
