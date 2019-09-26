@@ -68,22 +68,22 @@ def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
     for ifile, file in enumerate(files):
         with File(pjoin(tt_path, 'tt', file)) as f:
             _read_body_waves(f, ifile, phase_list, phase_names, tt)
-            _read_surface_waves(f, ifile=ifile, phase_list=phase_list,
-                                freqs=freqs, distances=distances, tt=tt,
-                                backazimuth=backazimuth)
-    # try:
-    #     idx_ref = phase_list.index('P')
-    # except ValueError:
-    #     idx_ref = phase_list.index('P1')
+            if 'R1' in phase_list or 'G1' in phase_list:
+                _read_surface_waves(f, ifile=ifile, phase_list=phase_list,
+                                    freqs=freqs, distances=distances, tt=tt,
+                                    backazimuth=backazimuth)
 
     tt_P = np.zeros((len(files), ndepth, ndist, 1), dtype='float32')
     tt_P[:, :, :, 0] = tt[:, :, :, idx_ref]
 
     # -1 is the value for no arrival at this distance/model/depth combo
-    tt[tt == -1] = 1e5
-    tt_P[tt_P == -1] = 1e5
+    bool = [tt == -1]
+    bool_P = [tt_P == -1]
+    tt[bool] = 1e6
+    tt_P[bool_P] = 1e6
 
     tt -= tt_P
+    tt[bool] = 1e6
     return tt, depths, distances, tt_P
 
 

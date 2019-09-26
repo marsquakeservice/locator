@@ -261,26 +261,35 @@ def plot_phases(tt, p, phase_list, freqs, tt_meas, sigma):
     nphase = len(phase_list)
     fig, axs = plt.subplots(nrows=nphase, ncols=1, figsize=(6, 1.5 + nphase))
 
-    for iax, ax in enumerate(axs):
-        width = max(50., sigma[iax] * 2.0)
-        phase_mean = np.sum(tt[:, :, :, iax] * p, axis=None) / np.sum(p,
-                                                                      axis=None)
-        ax.hist(tt[:, :, :, iax].flatten(),
-                weights=p[:, :, :].flatten(),
-                bins=np.linspace(tt_meas[iax] - width,
-                                 tt_meas[iax] + width, 100))
-        ax.axvline(x=tt_meas[iax], c='r')
-        ax.axvline(x=tt_meas[iax] - sigma[iax], c='r', ls='--')
-        ax.axvline(x=tt_meas[iax] + sigma[iax], c='r', ls='--')
-        ax.axvline(x=phase_mean, c='darkgreen', lw=2)
-        if phase_list[iax] in ['R1', 'G1']:
-            phase_string = '%s %3ds' % (phase_list[iax],
-                                        int(1. / freqs[iax]))
-        else:
-            phase_string = phase_list[iax]
-        ax.text(x=0.05, y=0.5, s=phase_string,
-                fontsize=14, weight='bold',
-                transform=ax.transAxes)
+    fnam_out = 'phase_fits.txt' # % \
+        #(origin_time.strftime(format='%y-%m-%dT%H%M'))
+    with open(fnam_out, 'w') as f:
+        for iax, ax in enumerate(axs):
+            width = max(50., sigma[iax] * 2.0)
+            phase_mean = np.sum(tt[:, :, :, iax] * p, axis=None) \
+                         / np.sum(p, axis=None)
+            phase_sigma = np.sqrt(np.sum((tt[:, :, :, iax])**2 * p, axis=None) \
+                         / np.sum(p, axis=None) - phase_mean**2)
+            ax.hist(tt[:, :, :, iax].flatten(),
+                    weights=p[:, :, :].flatten(),
+                    bins=np.linspace(tt_meas[iax] - width,
+                                     tt_meas[iax] + width, 100))
+            ax.axvline(x=tt_meas[iax], c='r')
+            ax.axvline(x=tt_meas[iax] - sigma[iax], c='r', ls='--')
+            ax.axvline(x=tt_meas[iax] + sigma[iax], c='r', ls='--')
+            ax.axvline(x=phase_mean, c='darkgreen', lw=2)
+            if phase_list[iax] in ['R1', 'G1']:
+                phase_string = '%s %3ds' % (phase_list[iax],
+                                            int(1. / freqs[iax]))
+            else:
+                phase_string = phase_list[iax]
+            f.write('%s: mean: %8.3fs, sigma: %8.3fs \n' %
+                    (phase_string, phase_mean, phase_sigma))
+            ax.text(x=0.05, y=0.5, s=phase_string,
+                    fontsize=14, weight='bold',
+                    transform=ax.transAxes)
+
+
     plt.tight_layout()
     plt.savefig('phase_misfits.png')
     plt.close('all')

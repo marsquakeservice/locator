@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
-
-# TODO: hardcoded to MSS event, need to include argument
-#       parsing for the waveform directory etc
 import numpy as np
 import matplotlib.pyplot as plt
-from locator.input import load_tt, read_model_list
+from locator.input import load_tt, read_model_list, load_slowness
 from h5py import File
 from obspy import read, UTCDateTime, Stream, read_inventory
 from argparse import ArgumentParser
@@ -66,10 +63,8 @@ def main(args):
     phase_list_prediction = ['P', 'PP', 'PPP', 'PcP', 'PKKP',
                              'S', 'SS', 'SSS', 'ScS', 'SKKS'
                              ]
-    args = define_arguments()
     fnam_locatoroutput = args.locator_output
     H5 = load_H5(fnam_locatoroutput)
-    # p, model_name, depths, distances, phase_list, freqs, t_ref, baz = load_H5(fnam_locatoroutput)
     t0 = UTCDateTime(H5['t_ref'])
     stat_net, stat_station = env['STATION'].split('.')
     waveform_dir = pjoin(env['WAVEFORM_DIR'],
@@ -83,7 +78,8 @@ def main(args):
                        '%s.models' % H5['model_name'])
     weight_path = pjoin(tt_path,
                         '%s.weights' % H5['model_name'])
-    files, weights, model_names, all_weights  = read_model_list(model_path, weight_path)
+    files, weights, model_names, all_weights  = \
+        read_model_list(model_path, weight_path)
 
     # Load body waves
     tt = load_tt(files=files, 
@@ -92,6 +88,7 @@ def main(args):
                  freqs=H5['freqs'],
                  backazimuth=H5['baz'],
                  idx_ref=0)[0]
+
 
     nfreq = 21
     p0 = 5
@@ -114,13 +111,16 @@ def main(args):
                    freqs=freqs_sw,
                    backazimuth=H5['baz'],
                    idx_ref=0)[0]
-    st = read_waveform(waveform_dir, t0, stat=stat_station, net=stat_net, baz=H5['baz'])
+
+    st = read_waveform(waveform_dir, t0, stat=stat_station,
+                       net=stat_net, baz=H5['baz'])
 
 
     fig, ax = plt.subplots(nrows=4, ncols=1,
                            figsize=(10, 10), sharex='col')
     for iphase, phase in enumerate(phase_list_prediction):
-        y, x = np.histogram(tt[:, :, :, iphase].flatten(), weights=H5['p'].flatten(),
+        y, x = np.histogram(tt[:, :, :, iphase].flatten(),
+                            weights=H5['p'].flatten(),
                             bins=np.arange(-t_pre, t_post, 2),
                             density=False)
         ax[3].plot(x[1:], y / np.max((y)), label=phase)
@@ -145,8 +145,9 @@ def main(args):
                zorder=100, color='k', alpha=1./np.sqrt(sum(bol)))
     
     l_pick, = ax[0].plot(H5['tt_meas'][H5['phase_list']=='R1'], 
-		         H5['periods'][H5['phase_list']=='R1'], 'o', c='lime',
-		         zorder=9999)
+		                 H5['periods'][H5['phase_list']=='R1'],
+                         'o', c='lime',
+                         zorder=9999)
     l_pick, = ax[0].errorbar(x=H5['tt_meas'][H5['phase_list']=='R1'],
                              y=H5['periods'][H5['phase_list']=='R1'],
                              xerr=H5['sigma'][H5['phase_list']=='R1'],
@@ -172,9 +173,6 @@ def main(args):
     fig.savefig('phase_prediction_spec_long.png', dpi=200)
     ax[3].set_xlim(-t_pre, max(H5['tt_meas']*1.2))
     fig.savefig('phase_prediction_spec.png', dpi=200)
-
-
-    #st.integrate()
 
     st.filter('highpass', freq=1./20., zerophase=True, corners=6)
     st.filter('lowpass', freq=1., zerophase=True, corners=6)
