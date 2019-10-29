@@ -254,6 +254,8 @@ def write_models_to_disk(p_model, files, model_names, tt_path,
     vs_all = np.zeros((p_model.shape[0], depths_target.shape[0]))
     nmodel = 0
 
+    moho_depth = np.zeros(p_model.shape[0])
+
     if not os.path.exists(model_out_path):
         mkdir(model_out_path)
 
@@ -268,6 +270,8 @@ def write_models_to_disk(p_model, files, model_names, tt_path,
             nmodel += 1
             radius = np.asarray(f['mantle/radius'])
             depths = (max(radius) - radius) * 1e-3
+
+            moho_depth[imodel] = depths[-6]
 
             vp_ipl = np.interp(xp=depths[::-1],
                                fp=f['mantle/vp'].value[::-1],
@@ -296,6 +300,17 @@ def write_models_to_disk(p_model, files, model_names, tt_path,
                     (depths_target[idepth],
                      vp_mean[idepth], vp_sigma[idepth],
                      vs_mean[idepth], vs_sigma[idepth]))
+
+    fnam = pjoin(model_out_path, 'model_moho_depth.txt')
+    print(fnam)
+    moho_p, moho_d = np.histogram(moho_depth,
+                                  bins=np.arange(0., 120, 5.),
+                                  density=True, weights=p_model)
+    moho_out = np.zeros((moho_p.shape[0], 2))
+    moho_out[:, 0] = (moho_d[1:] + moho_d[0:-1]) * 0.5
+    moho_out[:, 1] = moho_p
+    np.savetxt(fname=fnam,
+               X=moho_out)
 
     fnam_pp_out = pjoin(model_out_path, 'model_prior_post.txt')
     write_model_misfits(p_model, fnam_out=fnam_pp_out,
