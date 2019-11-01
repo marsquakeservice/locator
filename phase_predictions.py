@@ -25,18 +25,18 @@ def define_arguments():
 
 
 def load_H5(fnam):
-    with File(fnam, 'r') as f:
+    with File(fnam, mode='r') as f:
         H5 = {
-            'model_name': f['modelset_name'].value,
-            'p': f['p'].value,
-            'depths': f['depths'].value,
-            'distances': f['distances'].value,
-            'phase_list': f['phase_list'].value,
-            't_ref': f['t_ref'].value,
-            'baz': f['backazimuth'].value,
-            'tt_meas': f['tt_meas'].value,
-            'freqs': f['freqs'].value,
-            'periods': 1./f['freqs'].value}
+            'model_name': f['modelset_name'][()],
+            'p': f['p'][()],
+            'depths': f['depths'][()],
+            'distances': f['distances'][()],
+            'phase_list': f['phase_list'][()],
+            't_ref': f['t_ref'][()],
+            'baz': f['backazimuth'][()],
+            'tt_meas': f['tt_meas'][()],
+            'freqs': f['freqs'][()],
+            'periods': 1./f['freqs'][()]}
     return H5 #p, model_name, depths, distances, phase_list, freqs, t_ref, baz
 
 
@@ -144,10 +144,10 @@ def main(args):
                1./np.array(freqs_sw[1:]),
                zorder=100, color='k', alpha=1./np.sqrt(sum(bol)))
     
-    l_pick, = ax[0].plot(H5['tt_meas'][H5['phase_list']=='R1'], 
-		                 H5['periods'][H5['phase_list']=='R1'],
-                         'o', c='lime',
-                         zorder=9999)
+    ax[0].plot(H5['tt_meas'][H5['phase_list']=='R1'],
+		       H5['periods'][H5['phase_list']=='R1'],
+               'o', c='lime',
+               zorder=9999)
     l_pick, = ax[0].errorbar(x=H5['tt_meas'][H5['phase_list']=='R1'],
                              y=H5['periods'][H5['phase_list']=='R1'],
                              xerr=H5['sigma'][H5['phase_list']=='R1'],

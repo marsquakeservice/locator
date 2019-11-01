@@ -31,9 +31,9 @@ def load_slowness(files, tt_path, phase_list):
     with File(pjoin(tt_path, 'tt', files[0])) as f:
         tts = f['/body_waves/times']
         ndepth, ndist, nphase = tts.shape
-        phase_names = f['/body_waves/phase_names'].value.tolist()
-        depths = f['/body_waves/depths'].value
-        distances = f['/body_waves/distances'].value
+        phase_names = f['/body_waves/phase_names'][()].tolist()
+        depths = f['/body_waves/depths'][()]
+        distances = f['/body_waves/distances'][()]
 
     slowness = np.zeros((len(files), ndepth, ndist,
                          len(phase_list)), dtype='float32')
@@ -56,17 +56,17 @@ def load_slowness(files, tt_path, phase_list):
 def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
 
     # Get dimension of TT variable (i.e. number of depths and distances)
-    with File(pjoin(tt_path, 'tt', files[0])) as f:
+    with File(pjoin(tt_path, 'tt', files[0]), mode='r') as f:
         tts = f['/body_waves/times']
         ndepth, ndist, nphase = tts.shape
-        phase_names = f['/body_waves/phase_names'].value.tolist()
-        depths = f['/body_waves/depths'].value
-        distances = f['/body_waves/distances'].value
+        phase_names = f['/body_waves/phase_names'][()].tolist()
+        depths = f['/body_waves/depths'][()]
+        distances = f['/body_waves/distances'][()]
 
     tt = np.zeros((len(files), ndepth, ndist, len(phase_list)), dtype='float32')
 
     for ifile, file in enumerate(files):
-        with File(pjoin(tt_path, 'tt', file)) as f:
+        with File(pjoin(tt_path, 'tt', file), mode='r') as f:
             _read_body_waves(f, ifile, phase_list, phase_names, tt)
             if 'R1' in phase_list or 'G1' in phase_list:
                 _read_surface_waves(f, ifile=ifile, phase_list=phase_list,
@@ -77,8 +77,8 @@ def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
     tt_P[:, :, :, 0] = tt[:, :, :, idx_ref]
 
     # -1 is the value for no arrival at this distance/model/depth combo
-    bool = [tt == -1]
-    bool_P = [tt_P == -1]
+    bool = tt == -1
+    bool_P = tt_P == -1
     tt[bool] = 1e6
     tt_P[bool_P] = 1e6
 
@@ -96,7 +96,7 @@ def _read_body_waves(f, ifile, phase_list, phase_names, tt):
 
 
 def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt, backazimuth):
-    periods = f['/surface_waves/periods'].value
+    periods = f['/surface_waves/periods'][()]
     dist_model = f['/surface_waves/distances']
     dist_pad = np.zeros(len(dist_model) + 1)
     dist_pad[1:] = dist_model
@@ -175,13 +175,13 @@ def read_h5_locator_output(fnam):
              dep: depth support points
              weights: a priori weights
     """
-    with File(fnam, 'r') as f:
-        p = np.asarray(f['p'].value)
-        dis = np.asarray(f['distances'].value)
-        dep = np.asarray(f['depths'].value)
-        weights = np.asarray(f['weights'].value)
+    with File(fnam, mode='r') as f:
+        p = np.asarray(f['p'][()])
+        dis = np.asarray(f['distances'][()])
+        dep = np.asarray(f['depths'][()])
+        weights = np.asarray(f['weights'][()])
         model_names = f['model_names']
-        modelset_name = '%s' % f['modelset_name'].value
+        modelset_name = '%s' % f['modelset_name'][()]
 
         # f.create_dataset('modelset_name', data=modelset_name)
         # f.create_dataset('phase_list', data=[n.encode("utf-8", "ignore")
