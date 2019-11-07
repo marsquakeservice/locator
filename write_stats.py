@@ -51,7 +51,11 @@ def write_variable(var, p, fnam, p_thresh = 1e-5,
     var_out = var_out[var_out<var_thresh[1]].flatten()
     p_out = p_out[var_out>var_thresh[0]].flatten()
     var_out = var_out[var_out>var_thresh[0]].flatten()
-    np.savetxt(fname=fnam, X=np.asarray([p_out, var_out]).T)
+
+    hist, bins = np.histogram(var_out, bins=100, weights=p_out, density=True)
+
+    #np.savetxt(fname=fnam, X=np.asarray([p_out, var_out]).T)
+    np.savetxt(fname=fnam, X=np.asarray([0.5 * (bins[1:] + bins[:-1]), hist]).T)
 
 
 def main(args):
