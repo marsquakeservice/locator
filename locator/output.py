@@ -171,10 +171,10 @@ def write_weight_file(p_model, model_names, prior_weights, fnam_out,
         for model_name, prior_weight in zip(model_names, prior_weights):
             if prior_weight > weight_lim:
                 weight = model_weights[imodel] * prior_weight
-                fid.write('%s %5.2f\n' % (model_name, weight))
+                fid.write('%s %6.3f\n' % (model_name, weight))
                 imodel += 1
             else:
-                fid.write('%s %5.2f\n' % (model_name, prior_weight))
+                fid.write('%s %6.3f\n' % (model_name, prior_weight))
 
 
 def write_model_misfits(p_model, model_names, fnam_out,
@@ -303,12 +303,16 @@ def write_models_to_disk(p_model, files, model_names, tt_path,
 
     fnam = pjoin(model_out_path, 'model_moho_depth.txt')
     print(fnam)
+    moho_prior, moho_d = np.histogram(moho_depth,
+                                  bins=np.arange(0., 120, 5.),
+                                  density=True)
     moho_p, moho_d = np.histogram(moho_depth,
                                   bins=np.arange(0., 120, 5.),
                                   density=True, weights=p_model)
-    moho_out = np.zeros((moho_p.shape[0], 2))
+    moho_out = np.zeros((moho_p.shape[0], 3))
     moho_out[:, 0] = (moho_d[1:] + moho_d[0:-1]) * 0.5
     moho_out[:, 1] = moho_p
+    moho_out[:, 2] = moho_prior
     np.savetxt(fname=fnam,
                X=moho_out)
 

@@ -60,36 +60,10 @@ def main(input_files, output_path, model_path):
 
     p_model_all /= p_model_all.max()
 
-    # vp_all, vs_all = write_models_to_disk(p_model=p_model_all,
-    #                      files=filenames, tt_path=model_path,
-    #                      weights=weights,
-    #                      model_names=model_names,
-    #                      model_out_path=output_path)
+    write_weight_file(p_model_all, model_names=model_names,
+                      fnam_out=args.output_path,
+                      prior_weights=weights)
 
-    # vp_pri, vp_pos, vs_pri, vs_pos, depths, vp_bin, vs_bin = \
-    #     plot_model_density(p_model=p_model_all,
-    #                        prior=weights[weights>1e-5],
-    #                        vp_all=vp_all,
-    #                        vs_all=vs_all)
-    plot_models(p=p_model_all,
-                dep=dep,
-                dis=dis,
-                files=filenames,
-                weights=weights,
-                tt_path=model_path,
-                model_marginal=True
-                )
-    # for var, fnam in zip((vp_pri, vp_pos, vs_pri, vs_pos,
-    #                       depths, vp_bin, vs_bin),
-    #                      ('model_vp_prior.txt',
-    #                       'model_vp_posterior.txt',
-    #                       'model_vs_prior.txt',
-    #                       'model_vs_posterior.txt',
-    #                       'model_depth_bins.txt',
-    #                       'model_vp_bins.txt',
-    #                       'model_vs_bins.txt'
-    #                       )):
-    #     np.savetxt(fname=os.path.join(output_path, fnam), X=var, fmt='%10.4e')
 
 if __name__ == '__main__':
     args = define_arguments()
