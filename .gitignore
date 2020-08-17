@@ -8,6 +8,10 @@ __pycache__/
 # C extensions
 *.so
 
+# Images
+*.png
+bodywavedistance_out.yml
+
 # Distribution / packaging
 .Python
 build/
