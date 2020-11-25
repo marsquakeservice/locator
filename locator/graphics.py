@@ -189,9 +189,9 @@ def plot_models(p, dep, dis, weights, files, tt_path):
     fig, ax = plt.subplots(2, 2, figsize=(10, 9))
     axins = ax.copy()
 
-    for ix in range(0, 2):
-        for iy in range(0, 2):
-            axins[ix, iy] = ax[ix, iy].inset_axes([0.10, 0.10, 0.4, 0.4])
+    # for ix in range(0, 2):
+    #     for iy in range(0, 2):
+            # axins[ix, iy] = ax[ix, iy].inset_axes([0.10, 0.10, 0.4, 0.4])
     for fnam, model_p in zip(files, models_p):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
             radius = np.asarray(f['mantle/radius'])
@@ -206,7 +206,7 @@ def plot_models(p, dep, dis, weights, files, tt_path):
             #    ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
             #                  alpha=model_p**2, zorder=20)
             if not fnam[0] == 'C':
-                for a in (ax, axins):
+                for a in (ax, ax): #axins):
                     lp, = a[0][0].plot(f['mantle/vp'], radius, c='lightgrey',
                                         lw=0.5, alpha=0.4, zorder=2)
                     ls, = a[0][0].plot(f['mantle/vs'], radius, c='darkred',
@@ -227,14 +227,14 @@ def plot_models(p, dep, dis, weights, files, tt_path):
         a.set_ylim(600, 0)
     vsmin = 3000
     vpmin = 3000 * np.sqrt(3)
-    axins[0][0].set_xlim(vsmin*0.9, vsmin*1.4)
-    axins[0][1].set_xlim(vsmin*0.9, vsmin*1.4)
-    axins[1][0].set_xlim(vpmin*0.9, vpmin*1.4)
-    axins[1][1].set_xlim(vpmin*0.9, vpmin*1.4)
-    axins[0][0].set_ylim(100, 0)
-    axins[0][1].set_ylim(100, 0)
-    axins[1][0].set_ylim(100, 0)
-    axins[1][1].set_ylim(100, 0)
+    # axins[0][0].set_xlim(vsmin*0.9, vsmin*1.4)
+    # axins[0][1].set_xlim(vsmin*0.9, vsmin*1.4)
+    # axins[1][0].set_xlim(vpmin*0.9, vpmin*1.4)
+    # axins[1][1].set_xlim(vpmin*0.9, vpmin*1.4)
+    # axins[0][0].set_ylim(100, 0)
+    # axins[0][1].set_ylim(100, 0)
+    # axins[1][0].set_ylim(100, 0)
+    # axins[1][1].set_ylim(100, 0)
     ax[0][0].set_xlim(vsmin, vsmin * 1.7)
     ax[0][1].set_xlim(vsmin, vsmin * 1.7)
     # ax[0][1].legend((lp, ls), ('vp', 'vs'))
