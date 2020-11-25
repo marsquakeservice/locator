@@ -37,7 +37,7 @@ def load_H5(fnam):
             'tt_meas': f['tt_meas'][()],
             'freqs': f['freqs'][()],
             'periods': 1./f['freqs'][()]}
-    return H5 #p, model_name, depths, distances, phase_list, freqs, t_ref, baz
+    return H5
 
 
 def plot_cwf(tr, ax, t_ref=0, fmin=1./50, fmax=1./2, w0=6):
