@@ -12,6 +12,7 @@ _type = dict(R1 = 'rayleigh',
 VP_HF = 4.
 VS_HF = VP_HF / 3. ** 0.5
 RADIUS_MARS = 3389.5
+DEPTH_MAX_HF = 5.
 
 
 def read_model_list(fnam_models, fnam_weights, weight_lim=1e-5):
@@ -75,6 +76,7 @@ def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
             _read_body_waves(f, ifile, phase_list, phase_names, tt)
             if 'Pg' in phase_list or 'Sg' in phase_list:
                 _read_HF_phases(f, ifile=ifile, phase_list=phase_list,
+                                depths=depths, 
                                 distances=distances, tt=tt)
 
             if 'R1' in phase_list or 'G1' in phase_list:
@@ -124,13 +126,16 @@ def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt, backazimuth)
             tt[ifile, :, :, iphase] = ipl(backazimuth,
                                           distances).T
 
-def _read_HF_phases(f, ifile, phase_list, distances, tt):
+def _read_HF_phases(f, ifile, phase_list, depths, distances, tt):
     distances_km = distances / 180. * (RADIUS_MARS * np.pi)
+    bol_depth = depths < DEPTH_MAX_HF
     for iphase, phase in enumerate(phase_list):
         if phase == 'Pg':
-            tt[ifile, :, :, iphase] = distances_km / VP_HF
+            tt[ifile, :, :, iphase] = -1.0
+            tt[ifile, bol_depth, :, iphase] = distances_km / VP_HF
         elif phase == 'Sg':
-            tt[ifile, :, :, iphase] = distances_km / VS_HF
+            tt[ifile, :, :, iphase] = -2.0
+            tt[ifile, bol_depth, :, iphase] = distances_km / VS_HF
 
 
 def read_input(filename):
