@@ -102,7 +102,7 @@ def _read_body_waves(f, ifile, phase_list, phase_names, tt):
     for iphase, phase in enumerate(phase_list):
         # Is it a body wave?
         if phase.encode() in phase_names and not \
-           phase.encode() not in ['Pg', 'Sg']:
+           phase.encode() in ['Pg', 'Sg']:
             idx = phase_names.index(phase.encode())
             tt[ifile, :, :, iphase] = f['/body_waves/times'][:, :, idx]
 
