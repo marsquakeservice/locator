@@ -172,7 +172,7 @@ def plot_model_density(p_model, prior, vp_all, vs_all):
 
 
 def plot_models(p, dep, dis, weights, files, tt_path, model_marginal=False):
-    from mpldatacursor import datacursor
+    #from mpldatacursor import datacursor
 
     # Model likelihood plot
     if model_marginal:
@@ -180,7 +180,7 @@ def plot_models(p, dep, dis, weights, files, tt_path, model_marginal=False):
     else:
         models_p = calc_marginal_models(p=p, dep=dep, dis=dis)
         models_p /= models_p.max()
-    print(models_p)
+    # print(models_p)
     fig, ax = plt.subplots(2, 1, sharex='all', sharey='all')
     ax[0].plot(weights, '.')
     ax[1].plot(models_p, '.')
@@ -213,27 +213,27 @@ def plot_models(p, dep, dis, weights, files, tt_path, model_marginal=False):
                 color='darkorange'     # Henri
 
             # for a in (ax, axins):
-            for a in (ax):
-                lp, = a[0][0].plot(f['mantle/vp'], radius, c='lightgrey',
-                                    lw=0.5, alpha=0.4, zorder=2)
-                ls, = a[0][0].plot(f['mantle/vs'], radius, c='darkred',
-                                    lw=0.5, alpha=0.4, zorder=2)
-                if model_p > 0.3:
-                    lp, = a[1][1].plot(f['mantle/vp'], radius, c='darkblue',
-                                       label=fnam,
-                                       lw=0.5, alpha=model_p ** 2, zorder=20)
-                    ls, = a[0][1].plot(f['mantle/vs'], radius, c=color, # 'darkred',
-                                       label=fnam,
-                                       lw=0.5, alpha=model_p ** 2, zorder=20)
-                    # lp, = ax[1][1].plot(f['mantle/vs'] - f['mantle/vs'][-7],
-                    #                     radius, c='darkred', lw=0.5,
-                    #                     alpha=model_p ** 2, zorder=20)
-                lp, = a[1][0].plot(f['mantle/vp'], radius,
+            a = ax #for a in (ax):
+            lp, = a[0][0].plot(f['mantle/vp'], radius, c='lightgrey',
+                                lw=0.5, alpha=0.4, zorder=2)
+            ls, = a[0][0].plot(f['mantle/vs'], radius, c='darkred',
+                                lw=0.5, alpha=0.4, zorder=2)
+            if model_p > 0.3:
+                lp, = a[1][1].plot(f['mantle/vp'], radius, c='darkblue',
                                    label=fnam,
-                                   c='darkblue', lw=0.5,
-                                    alpha=0.4, zorder=2)
+                                   lw=0.5, alpha=model_p ** 2, zorder=20)
+                ls, = a[0][1].plot(f['mantle/vs'], radius, c=color, # 'darkred',
+                                   label=fnam,
+                                   lw=0.5, alpha=model_p ** 2, zorder=20)
+                # lp, = ax[1][1].plot(f['mantle/vs'] - f['mantle/vs'][-7],
+                #                     radius, c='darkred', lw=0.5,
+                #                     alpha=model_p ** 2, zorder=20)
+            lp, = a[1][0].plot(f['mantle/vp'], radius,
+                               label=fnam,
+                               c='darkblue', lw=0.5,
+                                alpha=0.4, zorder=2)
 
-    datacursor(formatter='{label}'.format)
+    #datacursor(formatter='{label}'.format)
     for a in ax.flatten():
         a.set_ylim(1000, 0)
     vsmin = 3000
