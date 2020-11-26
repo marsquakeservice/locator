@@ -9,6 +9,11 @@ from os.path import join as pjoin
 _type = dict(R1 = 'rayleigh',
              G1 = 'love')
 
+VP_HF = 4.
+VS_HF = VP_HF / 3. ** 0.5
+RADIUS_MARS = 3389.5
+
+
 def read_model_list(fnam_models, fnam_weights, weight_lim=1e-5):
     """
     Read model list and weights from files
@@ -68,6 +73,10 @@ def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
     for ifile, file in enumerate(files):
         with File(pjoin(tt_path, 'tt', file), mode='r') as f:
             _read_body_waves(f, ifile, phase_list, phase_names, tt)
+            if 'Pg' in phase_list or 'Sg' in phase_list:
+                _read_HF_phases(f, ifile=ifile, phase_list=phase_list,
+                                distances=distances, tt=tt)
+
             if 'R1' in phase_list or 'G1' in phase_list:
                 _read_surface_waves(f, ifile=ifile, phase_list=phase_list,
                                     freqs=freqs, distances=distances, tt=tt,
@@ -90,7 +99,8 @@ def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
 def _read_body_waves(f, ifile, phase_list, phase_names, tt):
     for iphase, phase in enumerate(phase_list):
         # Is it a body wave?
-        if phase.encode() in phase_names:
+        if phase.encode() in phase_names and not \
+           phase.encode() not in ['Pg', 'Sg']:
             idx = phase_names.index(phase.encode())
             tt[ifile, :, :, iphase] = f['/body_waves/times'][:, :, idx]
 
@@ -113,6 +123,14 @@ def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt, backazimuth)
             ipl = interp2d(x=baz_model, y=dist_pad, z=tt_pad, kind='cubic')
             tt[ifile, :, :, iphase] = ipl(backazimuth,
                                           distances).T
+
+def _read_HF_phases(f, ifile, phase_list, distances, tt):
+    distances_km = distances / 180. * (RADIUS_MARS * np.pi)
+    for iphase, phase in enumerate(phase_list):
+        if phase == 'Pg':
+            tt[ifile, :, :, iphase] = distances_km / VP_HF
+        elif phase == 'Sg':
+            tt[ifile, :, :, iphase] = distances_km / VS_HF
 
 
 def read_input(filename):
