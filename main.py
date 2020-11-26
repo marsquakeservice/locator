@@ -76,7 +76,9 @@ def main(input_file, output_file, model_path, weight_path, plot_output,
                                  idx_ref=input['idx_ref'])
 
     # Total sigma is sigma of modelled travel time plus picking uncertainty
-    sigma = input['sigma_model'] + input['sigma']
+    sigma = np.sqrt(input['sigma_model'] ** 2.
+                    + input['sigma'] ** 2.
+                    + input['sigma_ref'] ** 2.)
 
     # depth prior
     depth_prior = np.exp(-(dep/max_depth)**2)

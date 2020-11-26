@@ -118,7 +118,7 @@ def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt, backazimuth)
 def read_input(filename):
     with open(filename, 'r') as f:
         input_yml = load(f)
-        phase_list, tt_meas, sigma, freqs, idx_ref, tt_ref = \
+        phase_list, tt_meas, sigma, freqs, idx_ref, tt_ref, sigma_ref = \
             serialize_phases(input_yml['phases'])
         try:
             backazimuth = input_yml['backazimuth']['value']
@@ -132,6 +132,7 @@ def read_input(filename):
              'phase_list': phase_list,
              'tt_meas': tt_meas,
              'sigma': sigma,
+             'sigma_ref': sigma_ref,
              'freqs': freqs,
              'backazimuth': backazimuth,
              'idx_ref': idx_ref,
@@ -162,8 +163,9 @@ def serialize_phases(phases):
 
     tt_ref = tt_meas[iref]
     tt_meas -= tt_ref
+    sigma_ref = sigma[iref]
 
-    return phase_list, tt_meas, sigma, freqs, iref, tt_ref
+    return phase_list, tt_meas, sigma, freqs, iref, tt_ref, sigma_ref
 
 
 def read_h5_locator_output(fnam):
