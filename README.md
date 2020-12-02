@@ -1,5 +1,9 @@
 [![Build Status](https://travis-ci.org/marsquakeservice/locator.svg?branch=master)](https://travis-ci.org/marsquakeservice/locator)
 
+
+[![DOI](https://zenodo.org/badge/154880324.svg)](https://zenodo.org/badge/latestdoi/154880324)
+
+
 Locator
 --
 Tries to locate earthquakes based on picked arrival times and a set of velocity models in MQS-format. 
