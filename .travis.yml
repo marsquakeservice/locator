@@ -20,7 +20,7 @@ script:
   # Create test file
   - python ./locator/tools/create_test.py 41 70 --travis
   - coverage run main.py locator_input.yml locator_test_41_70.yml --plot
-  - python locator/test_h5_output.py locator_output_18-12-31T2359.h5 locator/data/tests/MQS.h5
+  - python locator/test_h5_output.py locator_output_18-12-31T2359.h5 locator/data/tests/MQS.h5 -p 0.001
   - ls
   #- cat locator/data/locator_input_20190719.yaml | ./locator.bash
   # - python locator/test_h5_output.py locator_output_19-07-19T1333.h5 locator/data/tests/locator_output_ref_190719.h5 -p 1e-5
