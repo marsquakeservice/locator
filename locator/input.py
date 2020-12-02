@@ -9,6 +9,12 @@ from os.path import join as pjoin
 _type = dict(R1 = 'rayleigh',
              G1 = 'love')
 
+VP_HF = 4.
+VS_HF = VP_HF / 3. ** 0.5
+RADIUS_MARS = 3389.5
+DEPTH_MAX_HF = 5.
+
+
 def read_model_list(fnam_models, fnam_weights, weight_lim=1e-5):
     """
     Read model list and weights from files
@@ -68,6 +74,11 @@ def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
     for ifile, file in enumerate(files):
         with File(pjoin(tt_path, 'tt', file), mode='r') as f:
             _read_body_waves(f, ifile, phase_list, phase_names, tt)
+            if 'Pg' in phase_list or 'Sg' in phase_list:
+                _read_HF_phases(f, ifile=ifile, phase_list=phase_list,
+                                depths=depths, 
+                                distances=distances, tt=tt)
+
             if 'R1' in phase_list or 'G1' in phase_list:
                 _read_surface_waves(f, ifile=ifile, phase_list=phase_list,
                                     freqs=freqs, distances=distances, tt=tt,
@@ -90,7 +101,8 @@ def load_tt(files, tt_path, phase_list, freqs, backazimuth, idx_ref):
 def _read_body_waves(f, ifile, phase_list, phase_names, tt):
     for iphase, phase in enumerate(phase_list):
         # Is it a body wave?
-        if phase.encode() in phase_names:
+        if phase.encode() in phase_names and not \
+           phase.encode() in ['Pg', 'Sg']:
             idx = phase_names.index(phase.encode())
             tt[ifile, :, :, iphase] = f['/body_waves/times'][:, :, idx]
 
@@ -114,11 +126,22 @@ def _read_surface_waves(f, ifile, phase_list, freqs, distances, tt, backazimuth)
             tt[ifile, :, :, iphase] = ipl(backazimuth,
                                           distances).T
 
+def _read_HF_phases(f, ifile, phase_list, depths, distances, tt):
+    distances_km = distances / 180. * (RADIUS_MARS * np.pi)
+    bol_depth = depths < DEPTH_MAX_HF
+    for iphase, phase in enumerate(phase_list):
+        if phase == 'Pg':
+            tt[ifile, :, :, iphase] = -1.0
+            tt[ifile, bol_depth, :, iphase] = distances_km / VP_HF
+        elif phase == 'Sg':
+            tt[ifile, :, :, iphase] = -2.0
+            tt[ifile, bol_depth, :, iphase] = distances_km / VS_HF
+
 
 def read_input(filename):
     with open(filename, 'r') as f:
         input_yml = load(f)
-        phase_list, tt_meas, sigma, freqs, idx_ref, tt_ref = \
+        phase_list, tt_meas, sigma, freqs, idx_ref, tt_ref, sigma_ref = \
             serialize_phases(input_yml['phases'])
         try:
             backazimuth = input_yml['backazimuth']['value']
@@ -132,6 +155,7 @@ def read_input(filename):
              'phase_list': phase_list,
              'tt_meas': tt_meas,
              'sigma': sigma,
+             'sigma_ref': sigma_ref,
              'freqs': freqs,
              'backazimuth': backazimuth,
              'idx_ref': idx_ref,
@@ -162,8 +186,9 @@ def serialize_phases(phases):
 
     tt_ref = tt_meas[iref]
     tt_meas -= tt_ref
+    sigma_ref = sigma[iref]
 
-    return phase_list, tt_meas, sigma, freqs, iref, tt_ref
+    return phase_list, tt_meas, sigma, freqs, iref, tt_ref, sigma_ref
 
 
 def read_h5_locator_output(fnam):

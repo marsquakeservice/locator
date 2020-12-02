@@ -3,6 +3,7 @@ import numpy as np
 from os.path import join as pjoin
 from os import environ
 
+import sys
 try:
     environ['DISPLAY']
 except KeyError:
@@ -14,6 +15,12 @@ from h5py import File
 
 from locator.general_functions import calc_marginals_depdis, \
     calc_marginal_models
+
+if sys.version_info.major == 3 and matplotlib.__version__[0] == '3':
+    PYTHON3 = True
+else: 
+    PYTHON3 = False
+
 
 def plot_2D_with_marginals(x, y, z, x_aux=None, y_aux=None,
                            xlabel=None, ylabel=None, xunit='', yunit='',
@@ -172,7 +179,7 @@ def plot_model_density(p_model, prior, vp_all, vs_all):
 
 
 def plot_models(p, dep, dis, weights, files, tt_path, model_marginal=False):
-    from mpldatacursor import datacursor
+    #from mpldatacursor import datacursor
 
     # Model likelihood plot
     if model_marginal:
@@ -180,7 +187,7 @@ def plot_models(p, dep, dis, weights, files, tt_path, model_marginal=False):
     else:
         models_p = calc_marginal_models(p=p, dep=dep, dis=dis)
         models_p /= models_p.max()
-    print(models_p)
+    # print(models_p)
     fig, ax = plt.subplots(2, 1, sharex='all', sharey='all')
     ax[0].plot(weights, '.')
     ax[1].plot(models_p, '.')
@@ -195,24 +202,17 @@ def plot_models(p, dep, dis, weights, files, tt_path, model_marginal=False):
 
     # Plot with all mantle profiles
     fig, ax = plt.subplots(2, 2, figsize=(10, 9))
-    axins = ax.copy()
+    if PYTHON3:
+        axins = ax.copy()
+        for ix in range(0, 2):
+            for iy in range(0, 2):
+                axins[ix, iy] = ax[ix, iy].inset_axes([0.10, 0.10, 0.4, 0.4])
 
-    for ix in range(0, 2):
-        for iy in range(0, 2):
-            axins[ix, iy] = ax[ix, iy].inset_axes([0.10, 0.10, 0.4, 0.4])
     for fnam, model_p in zip(files, models_p):
         with File(pjoin(tt_path, 'tt', fnam)) as f:
             radius = np.asarray(f['mantle/radius'])
             radius = (max(radius) - radius) * 1e-3
-            # for a in ax:
-            #    lp,  = a.plot(f['mantle/vp'], radius, c='lightgrey',
-            #                  alpha=0.4, zorder=2)
-            #    ls,  = a.plot(f['mantle/vs'], radius,c='lightgrey',
-            #                  alpha=0.4, zorder=2)
-            #    lp,  = a.plot(f['mantle/vp'], radius, c='darkblue',
-            #                  alpha=model_p**2, zorder=20)
-            #    ls,  = a.plot(f['mantle/vs'], radius,c='darkred',
-            #                  alpha=model_p**2, zorder=20)
+
             if fnam[0] in ['1', '2']:  # Amir
                 color = 'darkgreen'
             elif not fnam[0] == 'C':   # Tilio
@@ -220,10 +220,27 @@ def plot_models(p, dep, dis, weights, files, tt_path, model_marginal=False):
             else:
                 color='darkorange'     # Henri
 
-            for a in (ax, axins):
+            # General plot
+            a = ax 
+            ls, = a[0][0].plot(f['mantle/vs'], radius, c=color,
+                                lw=0.5, alpha=0.4, zorder=2)
+            lp, = a[1][0].plot(f['mantle/vp'], radius,
+                               label=fnam,
+                               c=color, lw=0.5,
+                                alpha=0.4, zorder=2)
+            if model_p > 0.3:
+                lp, = a[1][1].plot(f['mantle/vp'], radius, c=color,
+                                   label=fnam,
+                                   lw=0.5, alpha=model_p ** 2, zorder=20)
+                ls, = a[0][1].plot(f['mantle/vs'], radius, c=color, # 'darkred',
+                                   label=fnam,
+                                   lw=0.5, alpha=model_p ** 2, zorder=20)
+            # Axis inset
+            if PYTHON3:
+                a = axins
                 lp, = a[0][0].plot(f['mantle/vp'], radius, c='lightgrey',
                                     lw=0.5, alpha=0.4, zorder=2)
-                ls, = a[0][0].plot(f['mantle/vs'], radius, c='darkred',
+                ls, = a[0][0].plot(f['mantle/vs'], radius, c=color,
                                     lw=0.5, alpha=0.4, zorder=2)
                 if model_p > 0.3:
                     lp, = a[1][1].plot(f['mantle/vp'], radius, c='darkblue',
@@ -232,27 +249,26 @@ def plot_models(p, dep, dis, weights, files, tt_path, model_marginal=False):
                     ls, = a[0][1].plot(f['mantle/vs'], radius, c=color, # 'darkred',
                                        label=fnam,
                                        lw=0.5, alpha=model_p ** 2, zorder=20)
-                    # lp, = ax[1][1].plot(f['mantle/vs'] - f['mantle/vs'][-7],
-                    #                     radius, c='darkred', lw=0.5,
-                    #                     alpha=model_p ** 2, zorder=20)
                 lp, = a[1][0].plot(f['mantle/vp'], radius,
                                    label=fnam,
                                    c='darkblue', lw=0.5,
                                     alpha=0.4, zorder=2)
 
-    datacursor(formatter='{label}'.format)
+    #datacursor(formatter='{label}'.format)
     for a in ax.flatten():
         a.set_ylim(1000, 0)
     vsmin = 3000
     vpmin = 3000 * np.sqrt(3)
-    axins[0][0].set_xlim(vsmin*0.9, vsmin*1.4)
-    axins[0][1].set_xlim(vsmin*0.9, vsmin*1.4)
-    axins[1][0].set_xlim(vpmin*0.9, vpmin*1.4)
-    axins[1][1].set_xlim(vpmin*0.9, vpmin*1.4)
-    axins[0][0].set_ylim(100, 0)
-    axins[0][1].set_ylim(100, 0)
-    axins[1][0].set_ylim(100, 0)
-    axins[1][1].set_ylim(100, 0)
+    if PYTHON3:
+        axins[0][0].set_xlim(vsmin*0.9, vsmin*1.4)
+        axins[0][1].set_xlim(vsmin*0.9, vsmin*1.4)
+        axins[1][0].set_xlim(vpmin*0.9, vpmin*1.4)
+        axins[1][1].set_xlim(vpmin*0.9, vpmin*1.4)
+        axins[0][0].set_ylim(100, 0)
+        axins[0][1].set_ylim(100, 0)
+        axins[1][0].set_ylim(100, 0)
+        axins[1][1].set_ylim(100, 0)
+
     ax[0][0].set_xlim(vsmin, 5000)
     ax[0][1].set_xlim(vsmin, 5000)
     ax[1][0].set_xlim(vpmin, vpmin * 1.7)
@@ -270,7 +286,7 @@ def plot_models(p, dep, dis, weights, files, tt_path, model_marginal=False):
         a.set_xlabel('velocity, P-waves [m/s]')
         a.set_ylabel('depth [km]')
     plt.tight_layout()
-    plt.show()
+    # plt.show()
     plt.savefig('velocity_models.png', dpi=200)
 
 
