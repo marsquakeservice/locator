@@ -5,11 +5,18 @@ from scipy.interpolate import interp1d
 
 def _get_median(x, p_x):
     ipl = interp1d(x, p_x, kind='cubic')
-    x_ipl = np.arange(x[0], x[-1], 0.1)
+    x_ipl = np.linspace(x[0], x[-1], 1000)
     p_ipl = ipl(x_ipl)
     p_ipl /= np.sum(p_ipl)
     p_cum = np.cumsum(p_ipl)
     return x_ipl[np.argmin(abs(p_cum - 0.5))]
+
+
+def _get_max(x, p_x):
+    ipl = interp1d(x, p_x, kind='cubic')
+    x_ipl = np.linspace(x[0], x[-1], 1000)
+    p_ipl = ipl(x_ipl)
+    return x_ipl[np.argmax(p_ipl)]
 
 
 def calc_marginals_depdis(dep, dis, p):
@@ -27,8 +34,10 @@ def calc_marginals_depdis(dep, dis, p):
     p_depth = np.sum(p * deldis, axis=(0, 2))
     p_depdis = np.sum(p * deldis * deldep, axis=0)
 
-    depth_mean = _get_median(dep, p_depth)
-    dist_mean = _get_median(dis, p_dist)
+    # depth_mean = _get_median(dep, p_depth)
+    # dist_mean = _get_median(dis, p_dist)
+    depth_mean = _get_max(dep, p_depth)
+    dist_mean = _get_max(dis, p_dist)
     return depth_mean, dist_mean, p_depdis, p_depth, p_dist
 
 

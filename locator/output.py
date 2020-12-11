@@ -10,7 +10,7 @@ from h5py import File
 from obspy import UTCDateTime
 from platform import uname
 import sys
-from locator.general_functions import _get_median
+from locator.general_functions import _get_max
 
 # let YAML output fit into a IEEE 754 single format float
 from locator.general_functions import calc_marginals_depdis, \
@@ -30,8 +30,7 @@ def calc_origin_time(p, t_ref, tt_P):
                                             bins=np.arange(origin_min, origin_max, 2),
                                             density=True)
     time_bin_mid = (origin_times[0:-1] + origin_times[1:]) / 2.
-    origin_time_mean = _get_median(time_bin_mid, origin_pdf)
-    #np.sum(origin_pdf * (time_bin_mid)) / np.sum(origin_pdf) 
+    origin_time_mean = _get_max(time_bin_mid, origin_pdf)
     time_bin_mid -= origin_time_mean
     origin_time_sum = UTCDateTime(origin_time_mean + t_ref)
     return origin_pdf, origin_time_sum, time_bin_mid
