@@ -10,7 +10,9 @@ except KeyError:
     import matplotlib
     matplotlib.use('Agg')
 
+import matplotlib
 from matplotlib import pyplot as plt
+
 from h5py import File
 
 from locator.general_functions import calc_marginals_depdis, \
